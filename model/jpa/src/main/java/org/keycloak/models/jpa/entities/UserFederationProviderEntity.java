@@ -17,6 +17,7 @@
 
 package org.keycloak.models.jpa.entities;
 
+import java.io.Serializable;
 import javax.persistence.Access;
 import javax.persistence.AccessType;
 import javax.persistence.CollectionTable;
@@ -37,7 +38,7 @@ import java.util.Map;
  */
 @Entity
 @Table(name="USER_FEDERATION_PROVIDER")
-public class UserFederationProviderEntity {
+public class UserFederationProviderEntity implements Serializable {
 
     @Id
     @Column(name="ID", length = 36)

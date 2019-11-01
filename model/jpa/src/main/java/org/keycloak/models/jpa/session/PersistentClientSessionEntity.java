@@ -43,7 +43,7 @@ import java.io.Serializable;
 @Table(name="OFFLINE_CLIENT_SESSION")
 @Entity
 @IdClass(PersistentClientSessionEntity.Key.class)
-public class PersistentClientSessionEntity {
+public class PersistentClientSessionEntity implements Serializable {
 
     public static final String LOCAL = "local";
     public static final String EXTERNAL = "external";

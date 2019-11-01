@@ -18,6 +18,7 @@
 
 package org.keycloak.authorization.jpa.entities;
 
+import java.io.Serializable;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -67,7 +68,7 @@ import org.keycloak.representations.idm.authorization.Logic;
         }
 )
 
-public class PolicyEntity {
+public class PolicyEntity implements Serializable {
 
     @Id
     @Column(name = "ID", length = 36)

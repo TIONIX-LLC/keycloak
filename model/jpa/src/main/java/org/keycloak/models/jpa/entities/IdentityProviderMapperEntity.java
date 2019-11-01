@@ -17,6 +17,7 @@
 
 package org.keycloak.models.jpa.entities;
 
+import java.io.Serializable;
 import javax.persistence.Access;
 import javax.persistence.AccessType;
 import javax.persistence.CollectionTable;
@@ -37,7 +38,7 @@ import java.util.Map;
  */
 @Entity
 @Table(name="IDENTITY_PROVIDER_MAPPER")
-public class IdentityProviderMapperEntity {
+public class IdentityProviderMapperEntity implements Serializable {
 
     @Id
     @Column(name="ID", length = 36)

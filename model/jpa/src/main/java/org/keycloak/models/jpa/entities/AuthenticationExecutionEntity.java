@@ -17,6 +17,7 @@
 
 package org.keycloak.models.jpa.entities;
 
+import java.io.Serializable;
 import org.keycloak.models.AuthenticationExecutionModel;
 
 import javax.persistence.Access;
@@ -35,7 +36,7 @@ import javax.persistence.Table;
  */
 @Table(name="AUTHENTICATION_EXECUTION")
 @Entity
-public class AuthenticationExecutionEntity {
+public class AuthenticationExecutionEntity implements Serializable {
     @Id
     @Column(name="ID", length = 36)
     @Access(AccessType.PROPERTY) // we do this because relationships often fetch id, but not entity.  This avoids an extra SQL

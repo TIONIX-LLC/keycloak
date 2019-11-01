@@ -17,6 +17,7 @@
 
 package org.keycloak.models.jpa.entities;
 
+import java.io.Serializable;
 import javax.persistence.Access;
 import javax.persistence.AccessType;
 import javax.persistence.CollectionTable;
@@ -41,7 +42,7 @@ import java.util.Map;
 @NamedQueries({
         @NamedQuery(name="findIdentityProviderByAlias", query="select identityProvider from IdentityProviderEntity identityProvider where identityProvider.alias = :alias")
 })
-public class IdentityProviderEntity {
+public class IdentityProviderEntity implements Serializable {
 
     @Id
     @Column(name="INTERNAL_ID", length = 36)

@@ -46,7 +46,7 @@ import java.io.Serializable;
 @Table(name="GROUP_ROLE_MAPPING")
 @Entity
 @IdClass(GroupRoleMappingEntity.Key.class)
-public class GroupRoleMappingEntity {
+public class GroupRoleMappingEntity implements Serializable {
 
     @Id
     @ManyToOne(fetch= FetchType.LAZY)

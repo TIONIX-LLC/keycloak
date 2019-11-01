@@ -35,7 +35,7 @@ import javax.persistence.Table;
 @Table(name="CLIENT_ATTRIBUTES")
 @Entity
 @IdClass(ClientAttributeEntity.Key.class)
-public class ClientAttributeEntity {
+public class ClientAttributeEntity implements Serializable {
 
     @Id
     @ManyToOne(fetch= FetchType.LAZY)

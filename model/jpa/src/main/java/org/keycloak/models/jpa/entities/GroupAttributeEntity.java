@@ -17,6 +17,7 @@
 
 package org.keycloak.models.jpa.entities;
 
+import java.io.Serializable;
 import org.hibernate.annotations.Nationalized;
 
 import javax.persistence.Access;
@@ -40,7 +41,7 @@ import javax.persistence.Table;
 })
 @Table(name="GROUP_ATTRIBUTE")
 @Entity
-public class GroupAttributeEntity {
+public class GroupAttributeEntity implements Serializable {
 
     @Id
     @Column(name="ID", length = 36)

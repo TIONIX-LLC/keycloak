@@ -17,6 +17,7 @@
 
 package org.keycloak.authorization.jpa.entities;
 
+import java.io.Serializable;
 import javax.persistence.Access;
 import javax.persistence.AccessType;
 import javax.persistence.Column;
@@ -46,7 +47,7 @@ import javax.persistence.UniqueConstraint;
         @NamedQuery(name="findGrantedOwnerResources", query="select distinct(r.id) from ResourceEntity r inner join PermissionTicketEntity p on r.id = p.resource.id where p.grantedTimestamp is not null and p.owner = :owner order by r.id")
     }
 )
-public class PermissionTicketEntity {
+public class PermissionTicketEntity implements Serializable {
 
     @Id
     @Column(name = "ID", length = 36)

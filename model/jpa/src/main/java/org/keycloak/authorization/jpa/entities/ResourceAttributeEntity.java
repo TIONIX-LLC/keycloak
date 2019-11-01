@@ -16,6 +16,7 @@
  */
 package org.keycloak.authorization.jpa.entities;
 
+import java.io.Serializable;
 import javax.persistence.Access;
 import javax.persistence.AccessType;
 import javax.persistence.Column;
@@ -36,7 +37,7 @@ import javax.persistence.Table;
 })
 @Table(name="RESOURCE_ATTRIBUTE")
 @Entity
-public class ResourceAttributeEntity {
+public class ResourceAttributeEntity implements Serializable {
 
     @Id
     @Column(name="ID", length = 36)

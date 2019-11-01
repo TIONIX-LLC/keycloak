@@ -40,7 +40,7 @@ import java.io.Serializable;
 @Entity
 @Table(name="USER_REQUIRED_ACTION")
 @IdClass(UserRequiredActionEntity.Key.class)
-public class UserRequiredActionEntity {
+public class UserRequiredActionEntity implements Serializable {
 
     @Id
     @ManyToOne(fetch= FetchType.LAZY)

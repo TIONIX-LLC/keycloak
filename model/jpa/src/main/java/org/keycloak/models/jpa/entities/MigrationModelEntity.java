@@ -17,6 +17,7 @@
 
 package org.keycloak.models.jpa.entities;
 
+import java.io.Serializable;
 import javax.persistence.Access;
 import javax.persistence.AccessType;
 import javax.persistence.Column;
@@ -30,7 +31,7 @@ import javax.persistence.Table;
  */
 @Table(name="MIGRATION_MODEL")
 @Entity
-public class MigrationModelEntity {
+public class MigrationModelEntity implements Serializable {
     public static final String SINGLETON_ID = "SINGLETON";
     @Id
     @Column(name="ID", length = 36)

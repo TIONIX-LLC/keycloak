@@ -41,7 +41,7 @@ import java.io.Serializable;
 @Table(name="REALM_ATTRIBUTE")
 @Entity
 @IdClass(RealmAttributeEntity.Key.class)
-public class RealmAttributeEntity {
+public class RealmAttributeEntity implements Serializable {
 
     @Id
     @ManyToOne(fetch= FetchType.LAZY)

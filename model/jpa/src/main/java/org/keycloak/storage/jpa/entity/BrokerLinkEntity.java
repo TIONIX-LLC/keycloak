@@ -44,7 +44,7 @@ import java.io.Serializable;
 @Table(name="BROKER_LINK")
 @Entity
 @IdClass(BrokerLinkEntity.Key.class)
-public class BrokerLinkEntity {
+public class BrokerLinkEntity implements Serializable {
 
     @Id
     @Column(name = "USER_ID")

@@ -17,6 +17,7 @@
 
 package org.keycloak.models.jpa.entities;
 
+import java.io.Serializable;
 import javax.persistence.Access;
 import javax.persistence.AccessType;
 import javax.persistence.CollectionTable;
@@ -37,7 +38,7 @@ import java.util.Map;
  */
 @Table(name="AUTHENTICATOR_CONFIG")
 @Entity
-public class AuthenticatorConfigEntity {
+public class AuthenticatorConfigEntity implements Serializable {
     @Id
     @Column(name="ID", length = 36)
     @Access(AccessType.PROPERTY) // we do this because relationships often fetch id, but not entity.  This avoids an extra SQL

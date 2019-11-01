@@ -17,6 +17,7 @@
 
 package org.keycloak.models.jpa.entities;
 
+import java.io.Serializable;
 import javax.persistence.Access;
 import javax.persistence.AccessType;
 import javax.persistence.Column;
@@ -40,7 +41,7 @@ import javax.persistence.Table;
         @NamedQuery(name="removeExpiredClientInitialAccess", query="delete from ClientInitialAccessEntity ia where (ia.expiration > 0 and (ia.timestamp + ia.expiration) < :currentTime) or ia.remainingCount = 0"),
         @NamedQuery(name="decreaseClientInitialAccessRemainingCount", query="update ClientInitialAccessEntity ia set ia.remainingCount = ia.remainingCount - 1 where ia.id = :id")
 })
-public class ClientInitialAccessEntity {
+public class ClientInitialAccessEntity implements Serializable {
 
     @Id
     @Column(name="ID", length = 36)

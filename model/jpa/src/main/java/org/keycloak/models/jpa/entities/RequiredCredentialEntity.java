@@ -34,7 +34,7 @@ import java.io.Serializable;
 @Table(name="REALM_REQUIRED_CREDENTIAL")
 @Entity
 @IdClass(RequiredCredentialEntity.Key.class)
-public class RequiredCredentialEntity {
+public class RequiredCredentialEntity implements Serializable {
 
     @Id
     @ManyToOne(fetch = FetchType.LAZY)

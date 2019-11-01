@@ -41,7 +41,7 @@ import java.io.Serializable;
 @Table(name="CLIENT_SCOPE_ROLE_MAPPING")
 @Entity
 @IdClass(ClientScopeRoleMappingEntity.Key.class)
-public class ClientScopeRoleMappingEntity {
+public class ClientScopeRoleMappingEntity implements Serializable {
 
     @Id
     @ManyToOne(fetch= FetchType.LAZY)

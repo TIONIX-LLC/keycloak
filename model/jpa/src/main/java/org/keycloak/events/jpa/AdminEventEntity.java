@@ -17,6 +17,7 @@
 
 package org.keycloak.events.jpa;
 
+import java.io.Serializable;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Id;
@@ -27,7 +28,7 @@ import javax.persistence.Table;
  */
 @Entity
 @Table(name="ADMIN_EVENT_ENTITY")
-public class AdminEventEntity {
+public class AdminEventEntity implements Serializable {
     
     @Id
     @Column(name="ID", length = 36)

@@ -45,7 +45,7 @@ import java.io.Serializable;
 @Table(name="FED_USER_ROLE_MAPPING")
 @Entity
 @IdClass(FederatedUserRoleMappingEntity.Key.class)
-public class FederatedUserRoleMappingEntity {
+public class FederatedUserRoleMappingEntity implements Serializable {
 
     @Id
     @Column(name = "USER_ID")
