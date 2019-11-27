@@ -18,6 +18,7 @@
 package org.keycloak.services.util;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 
@@ -39,6 +40,7 @@ public class ObjectMapperResolver implements ContextResolver<ObjectMapper> {
         if (indent) {
             mapper.enable(SerializationFeature.INDENT_OUTPUT);
         }
+        mapper.disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES);
     }
 
     @Override
