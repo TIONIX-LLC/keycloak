@@ -34,6 +34,7 @@ import java.util.Set;
 public class RealmRepresentation {
     protected String id;
     protected String realm;
+    protected String masterAdminClientId;
     protected String displayName;
     protected String displayNameHtml;
     protected Integer notBefore;
@@ -184,6 +185,14 @@ public class RealmRepresentation {
 
     public void setRealm(String realm) {
         this.realm = realm;
+    }
+
+    public String getMasterAdminClientId() {
+        return masterAdminClientId;
+    }
+
+    public void setMasterAdminClientId(String masterAdminClientId) {
+        this.masterAdminClientId = masterAdminClientId;
     }
 
     public String getDisplayName() {
