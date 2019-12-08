@@ -24,6 +24,8 @@ module.exports = {
       "no-useless-constructor":  "off",
       "@typescript-eslint/indent": "off",
       "@typescript-eslint/no-empty-interface": "off",
+      "@typescript-eslint/no-non-null-assertion": "off",
+      "@typescript-eslint/no-parameter-properties": "off",
       "no-restricted-properties": "off"
   },
 };

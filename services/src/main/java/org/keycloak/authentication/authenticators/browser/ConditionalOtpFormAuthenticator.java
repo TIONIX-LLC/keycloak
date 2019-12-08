@@ -278,8 +278,10 @@ public class ConditionalOtpFormAuthenticator extends OTPFormAuthenticator {
         }
 
         RoleModel role = getRoleFromString(realm, roleName);
-
-        return RoleUtils.hasRole(user.getRoleMappings(), role);
+        if (role != null) {
+            return user.hasRole(role);
+        }
+        return false;
     }
 
     private boolean isOTPRequired(KeycloakSession session, RealmModel realm, UserModel user) {

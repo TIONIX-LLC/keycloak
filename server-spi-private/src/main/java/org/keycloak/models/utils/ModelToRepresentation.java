@@ -32,6 +32,7 @@ import org.keycloak.events.Event;
 import org.keycloak.events.admin.AdminEvent;
 import org.keycloak.events.admin.AuthDetails;
 import org.keycloak.models.*;
+import org.keycloak.models.credential.OTPCredentialModel;
 import org.keycloak.provider.ProviderConfigProperty;
 import org.keycloak.representations.idm.*;
 import org.keycloak.representations.idm.authorization.*;
@@ -95,12 +96,12 @@ public class ModelToRepresentation {
         return rep;
     }
 
-    public static List<GroupRepresentation> searchForGroupByName(RealmModel realm, String search, Integer first, Integer max) {
+    public static List<GroupRepresentation> searchForGroupByName(RealmModel realm, boolean full, String search, Integer first, Integer max) {
         List<GroupRepresentation> result = new LinkedList<>();
         List<GroupModel> groups = realm.searchForGroupByName(search, first, max);
         if (Objects.isNull(groups)) return result;
         for (GroupModel group : groups) {
-            GroupRepresentation rep = toGroupHierarchy(group, false);
+            GroupRepresentation rep = toGroupHierarchy(group, full);
             result.add(rep);
         }
         return result;
@@ -168,7 +169,7 @@ public class ModelToRepresentation {
         rep.setEmail(user.getEmail());
         rep.setEnabled(user.isEnabled());
         rep.setEmailVerified(user.isEmailVerified());
-        rep.setTotp(session.userCredentialManager().isConfiguredFor(realm, user, CredentialModel.OTP));
+        rep.setTotp(session.userCredentialManager().isConfiguredFor(realm, user, OTPCredentialModel.TYPE));
         rep.setDisableableCredentialTypes(session.userCredentialManager().getDisableableCredentialTypes(realm, user));
         rep.setFederationLink(user.getFederationLink());
 
@@ -185,6 +186,7 @@ public class ModelToRepresentation {
             attrs.putAll(user.getAttributes());
             rep.setAttributes(attrs);
         }
+
         return rep;
     }
 
@@ -344,6 +346,17 @@ public class ModelToRepresentation {
         rep.setOtpPolicyType(otpPolicy.getType());
         rep.setOtpPolicyLookAheadWindow(otpPolicy.getLookAheadWindow());
         rep.setOtpSupportedApplications(otpPolicy.getSupportedApplications());
+        WebAuthnPolicy webAuthnPolicy = realm.getWebAuthnPolicy();
+        rep.setWebAuthnPolicyRpEntityName(webAuthnPolicy.getRpEntityName());
+        rep.setWebAuthnPolicySignatureAlgorithms(webAuthnPolicy.getSignatureAlgorithm());
+        rep.setWebAuthnPolicyRpId(webAuthnPolicy.getRpId());
+        rep.setWebAuthnPolicyAttestationConveyancePreference(webAuthnPolicy.getAttestationConveyancePreference());
+        rep.setWebAuthnPolicyAuthenticatorAttachment(webAuthnPolicy.getAuthenticatorAttachment());
+        rep.setWebAuthnPolicyRequireResidentKey(webAuthnPolicy.getRequireResidentKey());
+        rep.setWebAuthnPolicyUserVerificationRequirement(webAuthnPolicy.getUserVerificationRequirement());
+        rep.setWebAuthnPolicyCreateTimeout(webAuthnPolicy.getCreateTimeout());
+        rep.setWebAuthnPolicyAvoidSameAuthenticatorRegister(webAuthnPolicy.isAvoidSameAuthenticatorRegister());
+        rep.setWebAuthnPolicyAcceptableAaguids(webAuthnPolicy.getAcceptableAaguids());
         if (realm.getBrowserFlow() != null) rep.setBrowserFlow(realm.getBrowserFlow().getAlias());
         if (realm.getRegistrationFlow() != null) rep.setRegistrationFlow(realm.getRegistrationFlow().getAlias());
         if (realm.getDirectGrantFlow() != null) rep.setDirectGrantFlow(realm.getDirectGrantFlow().getAlias());
@@ -479,7 +492,18 @@ public class ModelToRepresentation {
     public static CredentialRepresentation toRepresentation(UserCredentialModel cred) {
         CredentialRepresentation rep = new CredentialRepresentation();
         rep.setType(CredentialRepresentation.SECRET);
-        rep.setValue(cred.getValue());
+        rep.setValue(cred.getChallengeResponse());
+        return rep;
+    }
+
+    public static CredentialRepresentation toRepresentation(CredentialModel cred) {
+        CredentialRepresentation rep = new CredentialRepresentation();
+        rep.setId(cred.getId());
+        rep.setType(cred.getType());
+        rep.setUserLabel(cred.getUserLabel());
+        rep.setCreatedDate(cred.getCreatedDate());
+        rep.setSecretData(cred.getSecretData());
+        rep.setCredentialData(cred.getCredentialData());
         return rep;
     }
 

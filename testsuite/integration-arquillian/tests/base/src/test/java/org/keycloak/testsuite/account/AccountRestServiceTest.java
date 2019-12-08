@@ -30,6 +30,7 @@ import org.keycloak.representations.idm.RealmRepresentation;
 import org.keycloak.services.messages.Messages;
 import org.keycloak.services.resources.account.AccountCredentialResource;
 import org.keycloak.services.resources.account.AccountCredentialResource.PasswordUpdate;
+import org.keycloak.testsuite.arquillian.annotation.EnableFeature;
 import org.keycloak.testsuite.util.TokenUtil;
 
 import java.io.IOException;
@@ -41,7 +42,6 @@ import java.util.Map;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.junit.Assert.*;
 import static org.keycloak.common.Profile.Feature.ACCOUNT_API;
-import static org.keycloak.testsuite.ProfileAssume.assumeFeatureEnabled;
 
 /**
  * @author <a href="mailto:sthorger@redhat.com">Stian Thorgersen</a>
@@ -191,25 +191,8 @@ public class AccountRestServiceTest extends AbstractRestServiceTest {
     
     @Test
     public void testProfilePreviewPermissions() throws IOException {
-        assumeFeatureEnabled(ACCOUNT_API);
-        
         TokenUtil noaccessToken = new TokenUtil("no-account-access", "password");
         TokenUtil viewToken = new TokenUtil("view-account-access", "password");
-        
-        // Read sessions with no access
-        assertEquals(403, SimpleHttp.doGet(getAccountUrl("sessions"), httpClient).header("Accept", "application/json").auth(noaccessToken.getToken()).asStatus());
-        
-        // Delete all sessions with no access
-        assertEquals(403, SimpleHttp.doDelete(getAccountUrl("sessions"), httpClient).header("Accept", "application/json").auth(noaccessToken.getToken()).asStatus());
-        
-        // Delete all sessions with read only
-        assertEquals(403, SimpleHttp.doDelete(getAccountUrl("sessions"), httpClient).header("Accept", "application/json").auth(viewToken.getToken()).asStatus());
-        
-        // Delete single session with no access
-        assertEquals(403, SimpleHttp.doDelete(getAccountUrl("session?id=bogusId"), httpClient).header("Accept", "application/json").auth(noaccessToken.getToken()).asStatus());
-        
-        // Delete single session with read only
-        assertEquals(403, SimpleHttp.doDelete(getAccountUrl("session?id=bogusId"), httpClient).header("Accept", "application/json").auth(viewToken.getToken()).asStatus());
         
         // Read password details with no access
         assertEquals(403, SimpleHttp.doGet(getAccountUrl("credentials/password"), httpClient).header("Accept", "application/json").auth(noaccessToken.getToken()).asStatus());
@@ -233,25 +216,12 @@ public class AccountRestServiceTest extends AbstractRestServiceTest {
     }
 
     @Test
-    public void testGetSessions() throws IOException {
-        assumeFeatureEnabled(ACCOUNT_API);
-        
-        List<SessionRepresentation> sessions = SimpleHttp.doGet(getAccountUrl("sessions"), httpClient).auth(tokenUtil.getToken()).asJson(new TypeReference<List<SessionRepresentation>>() {});
-
-        assertEquals(1, sessions.size());
-    }
-
-    @Test
     public void testGetPasswordDetails() throws IOException {
-        assumeFeatureEnabled(ACCOUNT_API);
-        
         getPasswordDetails();
     }
 
     @Test
     public void testPostPasswordUpdate() throws IOException {
-        assumeFeatureEnabled(ACCOUNT_API);
-        
         //Get the time of lastUpdate
         AccountCredentialResource.PasswordDetails initialDetails = getPasswordDetails();
 
@@ -275,8 +245,6 @@ public class AccountRestServiceTest extends AbstractRestServiceTest {
 
     @Test
     public void testPasswordConfirmation() throws IOException {
-        assumeFeatureEnabled(ACCOUNT_API);
-        
         updatePassword("password", "Str0ng3rP4ssw0rd", "confirmationDoesNotMatch", 400);
 
         updatePassword("password", "Str0ng3rP4ssw0rd", "Str0ng3rP4ssw0rd", 200);
@@ -317,31 +285,7 @@ public class AccountRestServiceTest extends AbstractRestServiceTest {
     }
 
     @Test
-    public void testDeleteSession() throws IOException {
-        assumeFeatureEnabled(ACCOUNT_API);
-        
-        TokenUtil viewToken = new TokenUtil("view-account-access", "password");
-        String sessionId = oauth.doLogin("view-account-access", "password").getSessionState();
-        List<SessionRepresentation> sessions = SimpleHttp.doGet(getAccountUrl("sessions"), httpClient).auth(viewToken.getToken()).asJson(new TypeReference<List<SessionRepresentation>>() {});
-        assertEquals(2, sessions.size());
-
-        // With `ViewToken` you can only read
-        int status = SimpleHttp.doDelete(getAccountUrl("session?id=" + sessionId), httpClient).acceptJson().auth(viewToken.getToken()).asStatus();
-        assertEquals(403, status);
-        sessions = SimpleHttp.doGet(getAccountUrl("sessions"), httpClient).auth(viewToken.getToken()).asJson(new TypeReference<List<SessionRepresentation>>() {});
-        assertEquals(2, sessions.size());
-
-        // Here you can delete the session
-        status = SimpleHttp.doDelete(getAccountUrl("session?id=" + sessionId), httpClient).acceptJson().auth(tokenUtil.getToken()).asStatus();
-        assertEquals(200, status);
-        sessions = SimpleHttp.doGet(getAccountUrl("sessions"), httpClient).auth(tokenUtil.getToken()).asJson(new TypeReference<List<SessionRepresentation>>() {});
-        assertEquals(1, sessions.size());
-    }
-
-    @Test
     public void listApplications() throws IOException {
-        assumeFeatureEnabled(ACCOUNT_API);
-
         TokenUtil token = new TokenUtil("view-applications-access", "password");
         List<ClientRepresentation> applications = SimpleHttp
                 .doGet(getAccountUrl("applications"), httpClient)
@@ -354,8 +298,6 @@ public class AccountRestServiceTest extends AbstractRestServiceTest {
 
     @Test
     public void listApplicationsWithoutPermission() throws IOException {
-        assumeFeatureEnabled(ACCOUNT_API);
-
         TokenUtil token = new TokenUtil("view-account-access", "password");
         SimpleHttp.Response response = SimpleHttp
                 .doGet(getAccountUrl("applications"), httpClient)
@@ -367,8 +309,6 @@ public class AccountRestServiceTest extends AbstractRestServiceTest {
 
     @Test
     public void getWebConsoleApplication() throws IOException {
-        assumeFeatureEnabled(ACCOUNT_API);
-
         TokenUtil token = new TokenUtil("view-applications-access", "password");
         String appId = "security-admin-console";
         ClientRepresentation webConsole = SimpleHttp
@@ -381,8 +321,6 @@ public class AccountRestServiceTest extends AbstractRestServiceTest {
 
     @Test
     public void getWebConsoleApplicationWithoutPermission() throws IOException {
-        assumeFeatureEnabled(ACCOUNT_API);
-
         TokenUtil token = new TokenUtil("view-account-access", "password");
         String appId = "security-admin-console";
         SimpleHttp.Response response = SimpleHttp
@@ -395,8 +333,6 @@ public class AccountRestServiceTest extends AbstractRestServiceTest {
 
     @Test
     public void getNotExistingApplication() throws IOException {
-        assumeFeatureEnabled(ACCOUNT_API);
-
         TokenUtil token = new TokenUtil("view-applications-access", "password");
         String appId = "not-existing";
         SimpleHttp.Response response = SimpleHttp
@@ -409,8 +345,6 @@ public class AccountRestServiceTest extends AbstractRestServiceTest {
 
     @Test
     public void createConsentForClient() throws IOException {
-        assumeFeatureEnabled(ACCOUNT_API);
-
         TokenUtil token = new TokenUtil("manage-consent-access", "password");
         String appId = "security-admin-console";
 
@@ -435,8 +369,6 @@ public class AccountRestServiceTest extends AbstractRestServiceTest {
 
     @Test
     public void updateConsentForClient() throws IOException {
-        assumeFeatureEnabled(ACCOUNT_API);
-
         TokenUtil token = new TokenUtil("manage-consent-access", "password");
         String appId = "security-admin-console";
 
@@ -481,8 +413,6 @@ public class AccountRestServiceTest extends AbstractRestServiceTest {
 
     @Test
     public void createConsentForNotExistingClient() throws IOException {
-        assumeFeatureEnabled(ACCOUNT_API);
-
         TokenUtil token = new TokenUtil("manage-consent-access", "password");
         String appId = "not-existing";
 
@@ -505,8 +435,6 @@ public class AccountRestServiceTest extends AbstractRestServiceTest {
 
     @Test
     public void createConsentForClientWithoutPermission() throws IOException {
-        assumeFeatureEnabled(ACCOUNT_API);
-
         TokenUtil token = new TokenUtil("view-consent-access", "password");
         String appId = "security-admin-console";
 
@@ -529,8 +457,6 @@ public class AccountRestServiceTest extends AbstractRestServiceTest {
 
     @Test
     public void createConsentForClientWithPut() throws IOException {
-        assumeFeatureEnabled(ACCOUNT_API);
-
         TokenUtil token = new TokenUtil("manage-consent-access", "password");
         String appId = "security-admin-console";
 
@@ -555,8 +481,6 @@ public class AccountRestServiceTest extends AbstractRestServiceTest {
 
     @Test
     public void updateConsentForClientWithPut() throws IOException {
-        assumeFeatureEnabled(ACCOUNT_API);
-
         TokenUtil token = new TokenUtil("manage-consent-access", "password");
         String appId = "security-admin-console";
 
@@ -601,8 +525,6 @@ public class AccountRestServiceTest extends AbstractRestServiceTest {
 
     @Test
     public void createConsentForNotExistingClientWithPut() throws IOException {
-        assumeFeatureEnabled(ACCOUNT_API);
-
         TokenUtil token = new TokenUtil("manage-consent-access", "password");
         String appId = "not-existing";
 
@@ -625,8 +547,6 @@ public class AccountRestServiceTest extends AbstractRestServiceTest {
 
     @Test
     public void createConsentForClientWithoutPermissionWithPut() throws IOException {
-        assumeFeatureEnabled(ACCOUNT_API);
-
         TokenUtil token = new TokenUtil("view-consent-access", "password");
         String appId = "security-admin-console";
 
@@ -649,8 +569,6 @@ public class AccountRestServiceTest extends AbstractRestServiceTest {
 
     @Test
     public void getConsentForClient() throws IOException {
-        assumeFeatureEnabled(ACCOUNT_API);
-
         TokenUtil token = new TokenUtil("manage-consent-access", "password");
         String appId = "security-admin-console";
 
@@ -684,8 +602,6 @@ public class AccountRestServiceTest extends AbstractRestServiceTest {
 
     @Test
     public void getConsentForNotExistingClient() throws IOException {
-        assumeFeatureEnabled(ACCOUNT_API);
-
         TokenUtil token = new TokenUtil("view-consent-access", "password");
         String appId = "not-existing";
         SimpleHttp.Response response = SimpleHttp
@@ -698,8 +614,6 @@ public class AccountRestServiceTest extends AbstractRestServiceTest {
 
     @Test
     public void getNotExistingConsentForClient() throws IOException {
-        assumeFeatureEnabled(ACCOUNT_API);
-
         TokenUtil token = new TokenUtil("view-consent-access", "password");
         String appId = "security-admin-console";
         SimpleHttp.Response response = SimpleHttp
@@ -712,8 +626,6 @@ public class AccountRestServiceTest extends AbstractRestServiceTest {
 
     @Test
     public void getConsentWithoutPermission() throws IOException {
-        assumeFeatureEnabled(ACCOUNT_API);
-
         TokenUtil token = new TokenUtil("view-applications-access", "password");
         String appId = "security-admin-console";
         SimpleHttp.Response response = SimpleHttp
@@ -726,8 +638,6 @@ public class AccountRestServiceTest extends AbstractRestServiceTest {
 
     @Test
     public void deleteConsentForClient() throws IOException {
-        assumeFeatureEnabled(ACCOUNT_API);
-
         TokenUtil token = new TokenUtil("manage-consent-access", "password");
         String appId = "security-admin-console";
 
@@ -766,8 +676,6 @@ public class AccountRestServiceTest extends AbstractRestServiceTest {
 
     @Test
     public void deleteConsentForNotExistingClient() throws IOException {
-        assumeFeatureEnabled(ACCOUNT_API);
-
         TokenUtil token = new TokenUtil("manage-consent-access", "password");
         String appId = "not-existing";
         SimpleHttp.Response response = SimpleHttp
@@ -781,8 +689,6 @@ public class AccountRestServiceTest extends AbstractRestServiceTest {
 
     @Test
     public void deleteConsentWithoutPermission() throws IOException {
-        assumeFeatureEnabled(ACCOUNT_API);
-
         TokenUtil token = new TokenUtil("view-consent-access", "password");
         String appId = "security-admin-console";
         SimpleHttp.Response response = SimpleHttp

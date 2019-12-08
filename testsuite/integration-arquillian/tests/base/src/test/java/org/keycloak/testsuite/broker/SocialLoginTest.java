@@ -80,6 +80,7 @@ import static org.keycloak.testsuite.broker.SocialLoginTest.Provider.GOOGLE_NON_
 import static org.keycloak.testsuite.broker.SocialLoginTest.Provider.LINKEDIN;
 import static org.keycloak.testsuite.broker.SocialLoginTest.Provider.MICROSOFT;
 import static org.keycloak.testsuite.broker.SocialLoginTest.Provider.OPENSHIFT;
+import static org.keycloak.testsuite.broker.SocialLoginTest.Provider.OPENSHIFT4;
 import static org.keycloak.testsuite.broker.SocialLoginTest.Provider.PAYPAL;
 import static org.keycloak.testsuite.broker.SocialLoginTest.Provider.STACKOVERFLOW;
 import static org.keycloak.testsuite.broker.SocialLoginTest.Provider.TWITTER;
@@ -115,6 +116,7 @@ public class SocialLoginTest extends AbstractKeycloakTest {
         PAYPAL("paypal", PayPalLoginPage.class),
         STACKOVERFLOW("stackoverflow", StackOverflowLoginPage.class),
         OPENSHIFT("openshift-v3", OpenShiftLoginPage.class),
+        OPENSHIFT4("openshift-v4", OpenShiftLoginPage.class),
         GITLAB("gitlab", GitLabLoginPage.class),
         BITBUCKET("bitbucket", BitbucketLoginPage.class),
         INSTAGRAM("instagram", InstagramLoginPage.class);
@@ -228,11 +230,23 @@ public class SocialLoginTest extends AbstractKeycloakTest {
     }
 
     @Test
+    @UncaughtServerErrorExpected
     public void openshiftLogin() {
         setTestProvider(OPENSHIFT);
         performLogin();
         assertUpdateProfile(false, false, true);
         assertAccount();
+        testTokenExchange();
+    }
+
+    @Test
+    @UncaughtServerErrorExpected
+    public void openshift4Login() {
+        setTestProvider(OPENSHIFT4);
+        performLogin();
+        assertUpdateProfile(false, false, true);
+        assertAccount();
+        testTokenExchange();
     }
 
     @Test
@@ -360,7 +374,7 @@ public class SocialLoginTest extends AbstractKeycloakTest {
         assertAccount();
     }
 
-    private IdentityProviderRepresentation buildIdp(Provider provider) {
+    public IdentityProviderRepresentation buildIdp(Provider provider) {
         IdentityProviderRepresentation idp = IdentityProviderBuilder.create().alias(provider.id()).providerId(provider.id()).build();
         idp.setEnabled(true);
         idp.setStoreToken(true);
@@ -382,7 +396,7 @@ public class SocialLoginTest extends AbstractKeycloakTest {
         if (provider == STACKOVERFLOW) {
             idp.getConfig().put("key", getConfig(provider, "clientKey"));
         }
-        if (provider == OPENSHIFT) {
+        if (provider == OPENSHIFT || provider == OPENSHIFT4) {
             idp.getConfig().put("baseUrl", getConfig(provider, "baseUrl"));
         }
         if (provider == PAYPAL) {

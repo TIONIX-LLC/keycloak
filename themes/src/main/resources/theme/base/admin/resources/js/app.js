@@ -2008,6 +2008,18 @@ module.config([ '$routeProvider', function($routeProvider) {
             },
             controller : 'RealmOtpPolicyCtrl'
         })
+        .when('/realms/:realm/authentication/webauthn-policy', {
+            templateUrl : resourceUrl + '/partials/webauthn-policy.html',
+            resolve : {
+                realm : function(RealmLoader) {
+                    return RealmLoader();
+                },
+                serverInfo : function(ServerInfo) {
+                    return ServerInfo.delay;
+                }
+            },
+            controller : 'RealmWebAuthnPolicyCtrl'
+        })
         .when('/realms/:realm/authentication/flows/:flow/config/:provider/:config', {
             templateUrl : resourceUrl + '/partials/authenticator-config.html',
             resolve : {
@@ -3099,6 +3111,18 @@ module.controller('PagingCtrl', function ($scope) {
     };
 });
 
+// Provides a component for injection with utility methods for manipulating strings
+module.factory('KcStrings', function () {
+    var instance = {};
+    
+    // some IE versions do not support string.endsWith method, this method should be used as an alternative for cross-browser compatibility
+    instance.endsWith = function(source, suffix) {
+        return source.indexOf(suffix, source.length - suffix.length) !== -1;
+    };
+    
+    return instance;
+});
+
 module.directive('kcPaging', function () {
     return {
         scope: {
@@ -3146,9 +3170,64 @@ module.directive('kcPassword', function ($compile, Notifications) {
     return {
         restrict: 'A',
         link: function ($scope, elem, attr, ctrl) {
+            function toggleMask(evt) {
+                if(elem.hasClass('password-conceal')) {
+                    view();
+                } else {
+                    conceal();
+                }
+            }
+
+            function view() {
+                elem.removeClass('password-conceal');
+
+                var t = elem.next().children().first();
+                t.addClass('fa-eye-slash');
+                t.removeClass('fa-eye');
+            }
+
+            function conceal() {
+                elem.addClass('password-conceal');
+
+                var t = elem.next().children().first();
+                t.removeClass('fa-eye-slash');
+                t.addClass('fa-eye');
+            }
+
             elem.addClass("password-conceal");
             elem.attr("type","text");
             elem.attr("autocomplete", "off");
+
+            var p = elem.parent();
+
+            var inputGroup = $('<div class="input-group"></div>');
+            var eye = $('<span class="input-group-addon btn btn-default"><span class="fa fa-eye"></span></span>')
+                        .on('click', toggleMask);
+
+            $scope.$watch(attr.ngModel, function(v) {
+                if (v && v == '**********') {
+                    elem.next().addClass('disabled')
+                } else if (v && v.indexOf('${v') == 0) {
+                    elem.next().addClass('disabled')
+                    view();
+                } else {
+                    elem.next().removeClass('disabled')
+                }
+            })
+
+            elem.detach().appendTo(inputGroup);
+            inputGroup.append(eye);
+            p.append(inputGroup);
         }
     }
+});
+
+
+module.filter('resolveClientRootUrl', function() {
+    return function(input) {
+        if (!input) {
+            return;
+        }
+        return input.replace("${authBaseUrl}", authServerUrl).replace("${authAdminUrl}", authUrl);
+    };
 });

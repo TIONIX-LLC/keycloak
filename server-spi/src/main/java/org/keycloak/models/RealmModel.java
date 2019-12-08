@@ -240,6 +240,9 @@ public interface RealmModel extends RoleContainerModel {
     OTPPolicy getOTPPolicy();
     void setOTPPolicy(OTPPolicy policy);
 
+    WebAuthnPolicy getWebAuthnPolicy();
+    void setWebAuthnPolicy(WebAuthnPolicy policy);
+
     RoleModel getRoleById(String id);
 
     List<GroupModel> getDefaultGroups();
@@ -295,6 +298,7 @@ public interface RealmModel extends RoleContainerModel {
 
     List<AuthenticationExecutionModel> getAuthenticationExecutions(String flowId);
     AuthenticationExecutionModel getAuthenticationExecutionById(String id);
+    AuthenticationExecutionModel getAuthenticationExecutionByFlowId(String flowId);
     AuthenticationExecutionModel addAuthenticatorExecution(AuthenticationExecutionModel model);
     void updateAuthenticatorExecution(AuthenticationExecutionModel model);
     void removeAuthenticatorExecution(AuthenticationExecutionModel model);

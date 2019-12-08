@@ -682,7 +682,7 @@ module.controller('ResourceServerScopeDetailCtrl', function($scope, $http, $rout
     }
 });
 
-module.controller('ResourceServerPolicyCtrl', function($scope, $http, $route, $location, realm, ResourceServer, ResourceServerPolicy, PolicyProvider, client, AuthzDialog, Notifications) {
+module.controller('ResourceServerPolicyCtrl', function($scope, $http, $route, $location, realm, ResourceServer, ResourceServerPolicy, PolicyProvider, client, AuthzDialog, Notifications, KcStrings) {
     $scope.realm = realm;
     $scope.client = client;
     $scope.policyProviders = [];
@@ -717,7 +717,14 @@ module.controller('ResourceServerPolicyCtrl', function($scope, $http, $route, $l
     });
 
     $scope.addPolicy = function(policyType) {
-        $location.url("/realms/" + realm.realm + "/clients/" + client.id + "/authz/resource-server/policy/" + policyType.type + "/create");
+        if (KcStrings.endsWith(policyType.type, '.js')) {
+            ResourceServerPolicy.save({realm : realm.realm, client : client.id, type: policyType.type}, {name: policyType.name, type: policyType.type}, function(data) {
+                $location.url("/realms/" + realm.realm + "/clients/" + client.id + "/authz/resource-server/policy/");
+                Notifications.success("The policy has been created.");
+            });
+        } else {
+            $location.url("/realms/" + realm.realm + "/clients/" + client.id + "/authz/resource-server/policy/" + policyType.type + "/create");
+        }
     }
 
     $scope.firstPage = function() {
@@ -1953,15 +1960,17 @@ module.controller('ResourceServerPolicyGroupDetailCtrl', function($scope, $route
     }, realm, client, $scope);
 });
 
-module.controller('ResourceServerPolicyJSDetailCtrl', function($scope, $route, $location, realm, PolicyController, client) {
+module.controller('ResourceServerPolicyJSDetailCtrl', function($scope, $route, $location, realm, PolicyController, client, serverInfo) {
     PolicyController.onInit({
         getPolicyType : function() {
             return "js";
         },
 
         onInit : function() {
+            $scope.readOnly = !serverInfo.featureEnabled('UPLOAD_SCRIPTS');
             $scope.initEditor = function(editor){
                 editor.$blockScrolling = Infinity;
+                editor.setReadOnly($scope.readOnly);
                 var session = editor.getSession();
                 session.setMode('ace/mode/javascript');
             };
@@ -2974,5 +2983,3 @@ module.controller('GroupPermissionsCtrl', function($scope, $http, $route, $locat
         }, true);
     });
 });
-
-

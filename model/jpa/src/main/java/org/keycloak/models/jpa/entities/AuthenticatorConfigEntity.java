@@ -31,6 +31,7 @@ import javax.persistence.ManyToOne;
 import javax.persistence.MapKeyColumn;
 import javax.persistence.Table;
 import java.util.Map;
+import javax.persistence.UniqueConstraint;
 
 /**
  * @author <a href="mailto:bill@burkecentral.com">Bill Burke</a>
@@ -54,7 +55,11 @@ public class AuthenticatorConfigEntity implements Serializable {
     @ElementCollection
     @MapKeyColumn(name="NAME")
     @Column(name="VALUE")
-    @CollectionTable(name="AUTHENTICATOR_CONFIG_ENTRY", joinColumns={ @JoinColumn(name="AUTHENTICATOR_ID") })
+    @CollectionTable(
+      name="AUTHENTICATOR_CONFIG_ENTRY",
+      joinColumns={ @JoinColumn(name="AUTHENTICATOR_ID") },
+      uniqueConstraints = { @UniqueConstraint(columnNames = {"AUTHENTICATOR_ID", "NAME"})}
+    )
     private Map<String, String> config;
 
     public String getId() {
