@@ -42,6 +42,10 @@ public class ModelVersion {
             snapshot = true;
             version = version.substring(0, version.length() - 9);
         }
+        int dashIndex = version.lastIndexOf("-");
+        if (dashIndex > 0) {
+            version = version.substring(0, dashIndex);
+        }
 
         String[] split = version.split("\\.");
         try {
