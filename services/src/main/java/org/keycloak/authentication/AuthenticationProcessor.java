@@ -17,13 +17,14 @@
 
 package org.keycloak.authentication;
 
+import java.util.Comparator;
+import java.util.stream.Collectors;
 import org.jboss.logging.Logger;
 import org.jboss.resteasy.spi.HttpRequest;
 import org.keycloak.authentication.authenticators.browser.AbstractUsernameFormAuthenticator;
 import org.keycloak.authentication.authenticators.client.ClientAuthUtil;
 import org.keycloak.common.ClientConnection;
 import org.keycloak.common.util.Time;
-import org.keycloak.credential.CredentialModel;
 import org.keycloak.events.Details;
 import org.keycloak.events.Errors;
 import org.keycloak.events.EventBuilder;
@@ -78,6 +79,10 @@ public class AuthenticationProcessor {
     public static final String BROKER_SESSION_ID = "broker.session.id";
     public static final String BROKER_USER_ID = "broker.user.id";
     public static final String FORWARDED_PASSIVE_LOGIN = "forwarded.passive.login";
+
+    private static final String SESSION_CONSTRAINT_ENABLED_ATTRIBUTE = "tvs.sessionConstraintEnabled";
+    private static final String SESSION_CONSTRAINT_COUNT_ATTRIBUTE = "tvs.sessionConstraintCount";
+    private static final String SESSION_CONSTRAINT_ACTION_ATTRIBUTE = "tvs.sessionConstraintAction";
 
     protected static final Logger logger = Logger.getLogger(AuthenticationProcessor.class);
     protected RealmModel realm;
@@ -1062,6 +1067,45 @@ public class AuthenticationProcessor {
         return clientSessionCtx;
     }
 
+    public static Response checkUserSessionsConstraint(KeycloakSession session, RealmModel realm, AuthenticationSessionModel authSession, EventBuilder event) {
+        ClientModel client = authSession.getClient();
+        boolean checkEnable = false;
+        int sessionCount = 0;
+        String constraintAction = "";
+        if (Boolean.TRUE.equals(Boolean.valueOf(client.getAttribute(SESSION_CONSTRAINT_ENABLED_ATTRIBUTE)))) {
+            checkEnable = true;
+            sessionCount = client.getAttribute(SESSION_CONSTRAINT_COUNT_ATTRIBUTE) != null ? Integer.parseInt(client.getAttribute(SESSION_CONSTRAINT_COUNT_ATTRIBUTE)) : 10;
+            constraintAction = client.getAttribute(SESSION_CONSTRAINT_ACTION_ATTRIBUTE);
+        } else if (Boolean.TRUE.equals(Boolean.valueOf(realm.getAttribute(SESSION_CONSTRAINT_ENABLED_ATTRIBUTE)))) {
+            checkEnable = true;
+            sessionCount = realm.getAttribute(SESSION_CONSTRAINT_COUNT_ATTRIBUTE, 10);
+            constraintAction = realm.getAttribute(SESSION_CONSTRAINT_ACTION_ATTRIBUTE);
+        }
+        if (checkEnable) {
+            List<UserSessionModel> userSessions = session.sessions().getUserSessions(realm, authSession.getAuthenticatedUser()).stream().filter(userSessionModel -> !userSessionModel.getId().equals(authSession.getParentSession().getId()))
+                    .filter(userSessionModel -> userSessionModel.getAuthenticatedClientSessionByClient(client.getId()) != null)
+                    .collect(Collectors.toList());
+            if (userSessions.size() >= sessionCount) {
+                if (SessionConstraintAction.LOGOUT_EARLY.name().equalsIgnoreCase(constraintAction)) {
+                    userSessions.stream()
+                            .sorted(Comparator.comparingInt(UserSessionModel::getStarted))
+                            .limit((userSessions.size() + 1) - sessionCount)
+                            .forEach(uSession -> session.sessions().removeUserSession(realm, uSession));
+                } else if (SessionConstraintAction.DISABLE_USER.name().equalsIgnoreCase(constraintAction)) {
+                    authSession.getAuthenticatedUser().setEnabled(false);
+                    event.error(Errors.MAX_USER_SESSION_LIMIT_EXCEEDED);
+                    return session.getProvider(LoginFormsProvider.class).setAuthenticationSession(authSession)
+                            .addError(new FormMessage(Messages.USER_SESSION_CONSTRAINT_DISABLE_USER)).createErrorPage(Response.Status.BAD_REQUEST);
+                } else {
+                    event.error(Errors.MAX_USER_SESSION_LIMIT_EXCEEDED);
+                    return session.getProvider(LoginFormsProvider.class).setAuthenticationSession(authSession)
+                            .addError(new FormMessage(Messages.USER_SESSION_CONSTRAINT_LOGOUT_CURRENT)).createErrorPage(Response.Status.BAD_REQUEST);
+                }
+            }
+        }
+        return null;
+    }
+
     public void evaluateRequiredActionTriggers() {
         AuthenticationManager.evaluateRequiredActionTriggers(session, authenticationSession, connection, request, uriInfo, event, realm, authenticationSession.getAuthenticatedUser());
     }
@@ -1089,6 +1133,10 @@ public class AuthenticationProcessor {
         // attachSession(); // Session will be attached after requiredActions + consents are finished.
         AuthenticationManager.setClientScopesInSession(authenticationSession);
 
+        Response response = AuthenticationProcessor.checkUserSessionsConstraint(session, realm, authenticationSession, event);
+        if (response != null) {
+            return response;
+        }
         String nextRequiredAction = nextRequiredAction();
         if (nextRequiredAction != null) {
             return AuthenticationManager.redirectToRequiredActions(session, realm, authenticationSession, uriInfo, nextRequiredAction);
@@ -1112,7 +1160,10 @@ public class AuthenticationProcessor {
         return new Result(model, clientAuthenticator, executions);
     }
 
-
-
+    public enum SessionConstraintAction {
+        LOGOUT_CURRENT,
+        LOGOUT_EARLY,
+        DISABLE_USER
+    }
 
 }

@@ -33,13 +33,11 @@ import org.keycloak.broker.provider.IdentityProviderFactory;
 import org.keycloak.broker.provider.IdentityProviderMapper;
 import org.keycloak.broker.provider.util.IdentityBrokerState;
 import org.keycloak.broker.saml.SAMLEndpoint;
-import org.keycloak.broker.saml.SAMLIdentityProvider;
 import org.keycloak.broker.social.SocialIdentityProvider;
 import org.keycloak.common.ClientConnection;
 import org.keycloak.common.util.Base64Url;
 import org.keycloak.common.util.ObjectUtil;
 import org.keycloak.common.util.Time;
-import org.keycloak.dom.saml.v2.SAML2Object;
 import org.keycloak.dom.saml.v2.protocol.StatusResponseType;
 import org.keycloak.events.Details;
 import org.keycloak.events.Errors;
@@ -831,6 +829,10 @@ public class IdentityBrokerService implements IdentityProvider.AuthenticationCal
 
         AuthenticationManager.setClientScopesInSession(authSession);
 
+        Response response = AuthenticationProcessor.checkUserSessionsConstraint(session, realmModel, authSession, event);
+        if (response != null) {
+            return response;
+        }
         String nextRequiredAction = AuthenticationManager.nextRequiredAction(session, authSession, clientConnection, request, session.getContext().getUri(), event);
         if (nextRequiredAction != null) {
             if ("true".equals(authSession.getAuthNote(AuthenticationProcessor.FORWARDED_PASSIVE_LOGIN))) {
