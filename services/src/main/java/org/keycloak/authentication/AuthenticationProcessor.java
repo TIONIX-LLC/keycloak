@@ -1094,12 +1094,10 @@ public class AuthenticationProcessor {
                 } else if (SessionConstraintAction.DISABLE_USER.name().equalsIgnoreCase(constraintAction)) {
                     authSession.getAuthenticatedUser().setEnabled(false);
                     event.error(Errors.MAX_USER_SESSION_LIMIT_EXCEEDED);
-                    return session.getProvider(LoginFormsProvider.class).setAuthenticationSession(authSession)
-                            .addError(new FormMessage(Messages.USER_SESSION_CONSTRAINT_DISABLE_USER)).createErrorPage(Response.Status.BAD_REQUEST);
+                    return ErrorPage.error(session, authSession, Response.Status.BAD_REQUEST, Messages.USER_SESSION_CONSTRAINT_DISABLE_USER);
                 } else {
                     event.error(Errors.MAX_USER_SESSION_LIMIT_EXCEEDED);
-                    return session.getProvider(LoginFormsProvider.class).setAuthenticationSession(authSession)
-                            .addError(new FormMessage(Messages.USER_SESSION_CONSTRAINT_LOGOUT_CURRENT)).createErrorPage(Response.Status.BAD_REQUEST);
+                    return ErrorPage.error(session, authSession, Response.Status.BAD_REQUEST, Messages.USER_SESSION_CONSTRAINT_LOGOUT_CURRENT);
                 }
             }
         }
@@ -1130,13 +1128,13 @@ public class AuthenticationProcessor {
     }
     
     protected Response authenticationComplete() {
-        // attachSession(); // Session will be attached after requiredActions + consents are finished.
-        AuthenticationManager.setClientScopesInSession(authenticationSession);
-
         Response response = AuthenticationProcessor.checkUserSessionsConstraint(session, realm, authenticationSession, event);
         if (response != null) {
             return response;
         }
+        // attachSession(); // Session will be attached after requiredActions + consents are finished.
+        AuthenticationManager.setClientScopesInSession(authenticationSession);
+
         String nextRequiredAction = nextRequiredAction();
         if (nextRequiredAction != null) {
             return AuthenticationManager.redirectToRequiredActions(session, realm, authenticationSession, uriInfo, nextRequiredAction);

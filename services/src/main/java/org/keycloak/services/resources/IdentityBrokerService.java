@@ -826,13 +826,12 @@ public class IdentityBrokerService implements IdentityProvider.AuthenticationCal
         if (isDebugEnabled()) {
             logger.debugf("Performing local authentication for user [%s].", federatedUser);
         }
-
-        AuthenticationManager.setClientScopesInSession(authSession);
-
         Response response = AuthenticationProcessor.checkUserSessionsConstraint(session, realmModel, authSession, event);
         if (response != null) {
             return response;
         }
+        AuthenticationManager.setClientScopesInSession(authSession);
+
         String nextRequiredAction = AuthenticationManager.nextRequiredAction(session, authSession, clientConnection, request, session.getContext().getUri(), event);
         if (nextRequiredAction != null) {
             if ("true".equals(authSession.getAuthNote(AuthenticationProcessor.FORWARDED_PASSIVE_LOGIN))) {
