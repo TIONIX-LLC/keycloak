@@ -234,5 +234,6 @@ public class Messages {
 
     public static final String USER_SESSION_CONSTRAINT_DISABLE_USER = "userSessionConstraintDisableUser";
     public static final String USER_SESSION_CONSTRAINT_LOGOUT_CURRENT = "userSessionConstraintLogoutCurrent";
+    public static final String NOT_ACTIVE_USER_DISABLED = "notActiveUserDisabled";
 
 }

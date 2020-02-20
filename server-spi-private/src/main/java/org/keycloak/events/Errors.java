@@ -93,6 +93,7 @@ public interface Errors {
     String ILLEGAL_ORIGIN = "illegal_origin";
     String DISPLAY_UNSUPPORTED = "display_unsupported";
 
-    String MAX_USER_SESSION_LIMIT_EXCEEDED = "MAX_USER_SESSION_LIMIT_EXCEEDED";
+    String MAX_USER_SESSION_LIMIT_EXCEEDED = "max_user_session_limit_exceeded";
+    String NOT_ACTIVE_USER_DISABLED = "not_active_user_disabled";
 
 }

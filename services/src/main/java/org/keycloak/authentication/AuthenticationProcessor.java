@@ -17,6 +17,7 @@
 
 package org.keycloak.authentication;
 
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.stream.Collectors;
 import org.jboss.logging.Logger;
@@ -29,6 +30,7 @@ import org.keycloak.events.Details;
 import org.keycloak.events.Errors;
 import org.keycloak.events.EventBuilder;
 import org.keycloak.forms.login.LoginFormsProvider;
+import org.keycloak.models.AdminRoles;
 import org.keycloak.models.AuthenticationExecutionModel;
 import org.keycloak.models.AuthenticationFlowModel;
 import org.keycloak.models.AuthenticatorConfigModel;
@@ -66,6 +68,13 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import static org.keycloak.models.Constants.DISABLE_NOT_ACTIVE_USER;
+import static org.keycloak.models.Constants.DISABLE_NOT_ACTIVE_USER_PERIOD;
+import static org.keycloak.models.Constants.LAST_LOGIN;
+import static org.keycloak.models.Constants.SESSION_CONSTRAINT_ACTION;
+import static org.keycloak.models.Constants.SESSION_CONSTRAINT_COUNT;
+import static org.keycloak.models.Constants.SESSION_CONSTRAINT_ENABLED;
+
 /**
  * @author <a href="mailto:bill@burkecentral.com">Bill Burke</a>
  * @version $Revision: 1 $
@@ -79,10 +88,6 @@ public class AuthenticationProcessor {
     public static final String BROKER_SESSION_ID = "broker.session.id";
     public static final String BROKER_USER_ID = "broker.user.id";
     public static final String FORWARDED_PASSIVE_LOGIN = "forwarded.passive.login";
-
-    private static final String SESSION_CONSTRAINT_ENABLED_ATTRIBUTE = "tvs.sessionConstraintEnabled";
-    private static final String SESSION_CONSTRAINT_COUNT_ATTRIBUTE = "tvs.sessionConstraintCount";
-    private static final String SESSION_CONSTRAINT_ACTION_ATTRIBUTE = "tvs.sessionConstraintAction";
 
     protected static final Logger logger = Logger.getLogger(AuthenticationProcessor.class);
     protected RealmModel realm;
@@ -1072,14 +1077,14 @@ public class AuthenticationProcessor {
         boolean checkEnable = false;
         int sessionCount = 0;
         String constraintAction = "";
-        if (Boolean.TRUE.equals(Boolean.valueOf(client.getAttribute(SESSION_CONSTRAINT_ENABLED_ATTRIBUTE)))) {
+        if (Boolean.TRUE.equals(Boolean.valueOf(client.getAttribute(SESSION_CONSTRAINT_ENABLED)))) {
             checkEnable = true;
-            sessionCount = client.getAttribute(SESSION_CONSTRAINT_COUNT_ATTRIBUTE) != null ? Integer.parseInt(client.getAttribute(SESSION_CONSTRAINT_COUNT_ATTRIBUTE)) : 10;
-            constraintAction = client.getAttribute(SESSION_CONSTRAINT_ACTION_ATTRIBUTE);
-        } else if (Boolean.TRUE.equals(Boolean.valueOf(realm.getAttribute(SESSION_CONSTRAINT_ENABLED_ATTRIBUTE)))) {
+            sessionCount = client.getAttribute(SESSION_CONSTRAINT_COUNT) != null ? Integer.parseInt(client.getAttribute(SESSION_CONSTRAINT_COUNT)) : 10;
+            constraintAction = client.getAttribute(SESSION_CONSTRAINT_ACTION);
+        } else if (Boolean.TRUE.equals(Boolean.valueOf(realm.getAttribute(SESSION_CONSTRAINT_ENABLED)))) {
             checkEnable = true;
-            sessionCount = realm.getAttribute(SESSION_CONSTRAINT_COUNT_ATTRIBUTE, 10);
-            constraintAction = realm.getAttribute(SESSION_CONSTRAINT_ACTION_ATTRIBUTE);
+            sessionCount = realm.getAttribute(SESSION_CONSTRAINT_COUNT, 10);
+            constraintAction = realm.getAttribute(SESSION_CONSTRAINT_ACTION);
         }
         if (checkEnable) {
             List<UserSessionModel> userSessions = session.sessions().getUserSessions(realm, authSession.getAuthenticatedUser()).stream().filter(userSessionModel -> !userSessionModel.getId().equals(authSession.getParentSession().getId()))
@@ -1119,12 +1124,31 @@ public class AuthenticationProcessor {
     public void validateUser(UserModel authenticatedUser) {
         if (authenticatedUser == null) return;
         if (!authenticatedUser.isEnabled()) throw new AuthenticationFlowException(AuthenticationFlowError.USER_DISABLED);
+        checkActivityUser(authenticatedUser);
         if (realm.isBruteForceProtected() && !realm.isPermanentLockout()) {
             if (getBruteForceProtector().isTemporarilyDisabled(session, realm, authenticatedUser)) {
                 getEvent().error(Errors.RESET_CREDENTIAL_DISABLED);
                 ServicesLogger.LOGGER.passwordResetFailed(new AuthenticationFlowException(AuthenticationFlowError.USER_TEMPORARILY_DISABLED));
             }
         }
+    }
+
+    private void checkActivityUser(UserModel user) {
+        if (!user.hasRole(realm.getRole(AdminRoles.ADMIN))) {
+            boolean disableNotActiveUser = realm.getAttribute(DISABLE_NOT_ACTIVE_USER, false);
+            if (disableNotActiveUser && realm.getAttribute(DISABLE_NOT_ACTIVE_USER_PERIOD) != null
+                    && user.getFirstAttribute(LAST_LOGIN) != null) {
+                long lastLogin = Long.parseLong(user.getFirstAttribute(LAST_LOGIN));
+                long disableNotActiveUserPeriod = Long.parseLong(realm.getAttribute(DISABLE_NOT_ACTIVE_USER_PERIOD));
+                if (lastLogin + disableNotActiveUserPeriod * 1000 < System.currentTimeMillis()) {
+                    user.setEnabled(false);
+                    event.error(Errors.NOT_ACTIVE_USER_DISABLED);
+                    event.user(user);
+                    throw new ErrorPageException(session, authenticationSession, Response.Status.BAD_REQUEST, Messages.NOT_ACTIVE_USER_DISABLED, disableNotActiveUserPeriod / 86400);
+                }
+            }
+        }
+        user.setAttribute(LAST_LOGIN, Collections.singletonList(String.valueOf(System.currentTimeMillis())));
     }
     
     protected Response authenticationComplete() {
