@@ -17,8 +17,13 @@
 
 package org.keycloak.authentication;
 
+import java.time.Instant;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.TimeZone;
 import java.util.stream.Collectors;
 import org.jboss.logging.Logger;
 import org.jboss.resteasy.spi.HttpRequest;
@@ -37,6 +42,7 @@ import org.keycloak.models.AuthenticatorConfigModel;
 import org.keycloak.models.ClientModel;
 import org.keycloak.models.ClientSessionContext;
 import org.keycloak.models.Constants;
+import static org.keycloak.models.Constants.ENABLED_TILL;
 import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.RealmModel;
 import org.keycloak.models.UserModel;
@@ -1123,6 +1129,12 @@ public class AuthenticationProcessor {
 
     public void validateUser(UserModel authenticatedUser) {
         if (authenticatedUser == null) return;
+        if ((authenticatedUser.getFirstAttribute(ENABLED_TILL) != null) && authenticatedUser.isEnabled()) {
+            LocalDateTime enabledTillDate = LocalDateTime.ofInstant(Instant.ofEpochMilli(Long.parseLong(authenticatedUser.getFirstAttribute(ENABLED_TILL))), TimeZone.getDefault().toZoneId());
+            if (enabledTillDate.isBefore(LocalDateTime.now())) {
+                authenticatedUser.setEnabled(false);
+            }
+        }
         if (!authenticatedUser.isEnabled()) throw new AuthenticationFlowException(AuthenticationFlowError.USER_DISABLED);
         checkActivityUser(authenticatedUser);
         if (realm.isBruteForceProtected() && !realm.isPermanentLockout()) {
