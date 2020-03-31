@@ -51,6 +51,8 @@ public class UserCredentialModel implements CredentialInput {
     private final String challengeResponse;
     private final boolean adminRequest;
 
+    private String oldPassword;
+
     public UserCredentialModel(String credentialId, String type, String challengeResponse) {
         this.credentialId = credentialId;
         this.type = type;
@@ -65,12 +67,28 @@ public class UserCredentialModel implements CredentialInput {
         this.adminRequest = adminRequest;
     }
 
+    public UserCredentialModel(String credentialId, String type, String challengeResponse, String oldPassword, boolean adminRequest) {
+        this.credentialId = credentialId;
+        this.type = type;
+        this.challengeResponse = challengeResponse;
+        this.adminRequest = adminRequest;
+        this.oldPassword = oldPassword;
+    }
+
     public static UserCredentialModel password(String password) {
-        return password(password, false);
+        return password(password, null, false);
+    }
+
+    public static UserCredentialModel password(String password, String oldPassword) {
+        return password(password, oldPassword, false);
     }
 
     public static UserCredentialModel password(String password, boolean adminRequest) {
-        return new UserCredentialModel("", PasswordCredentialModel.TYPE, password, adminRequest);
+        return new UserCredentialModel("", PasswordCredentialModel.TYPE, password, null, adminRequest);
+    }
+
+    public static UserCredentialModel password(String password, String oldPassword, boolean adminRequest) {
+        return new UserCredentialModel("", PasswordCredentialModel.TYPE, password, oldPassword, adminRequest);
     }
 
     public static UserCredentialModel secret(String password) {
@@ -102,6 +120,11 @@ public class UserCredentialModel implements CredentialInput {
 
     public boolean isAdminRequest() {
         return adminRequest;
+    }
+
+    @Override
+    public String getOldPassword() {
+        return oldPassword;
     }
 }
 

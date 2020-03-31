@@ -564,7 +564,7 @@ public class AccountFormService extends AbstractSecuredLocalService {
                 return account.setError(Status.OK, Messages.MISSING_PASSWORD).createResponse(AccountPages.PASSWORD);
             }
 
-            UserCredentialModel cred = UserCredentialModel.password(password);
+            UserCredentialModel cred = UserCredentialModel.password(password, null);
             if (!session.userCredentialManager().isValid(realm, user, cred)) {
                 setReferrerOnPage();
                 errorEvent.error(Errors.INVALID_USER_CREDENTIALS);
@@ -585,7 +585,7 @@ public class AccountFormService extends AbstractSecuredLocalService {
         }
 
         try {
-            session.userCredentialManager().updateCredential(realm, user, UserCredentialModel.password(passwordNew, false));
+            session.userCredentialManager().updateCredential(realm, user, UserCredentialModel.password(passwordNew, requireCurrent ? password : null, false));
         } catch (ReadOnlyException mre) {
             setReferrerOnPage();
             errorEvent.error(Errors.NOT_ALLOWED);
