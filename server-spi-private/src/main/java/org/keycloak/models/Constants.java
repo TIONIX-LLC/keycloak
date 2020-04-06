@@ -109,4 +109,5 @@ public final class Constants {
     public static final String DISABLE_NOT_ACTIVE_USER_PERIOD = "tvs.disableNotActiveUserPeriod";
     public static final String LAST_LOGIN = "tvs.lastLogin";
     public static final String ENABLED_TILL = "tvs.enabledTill";
+    public static final String PREVIOUS_LOGIN = "tvs.previousLogin";
 }

@@ -43,6 +43,7 @@ import org.keycloak.models.ClientModel;
 import org.keycloak.models.ClientSessionContext;
 import org.keycloak.models.Constants;
 import static org.keycloak.models.Constants.ENABLED_TILL;
+import static org.keycloak.models.Constants.PREVIOUS_LOGIN;
 import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.RealmModel;
 import org.keycloak.models.UserModel;
@@ -1159,6 +1160,10 @@ public class AuthenticationProcessor {
                     throw new ErrorPageException(session, authenticationSession, Response.Status.BAD_REQUEST, Messages.NOT_ACTIVE_USER_DISABLED, disableNotActiveUserPeriod / 86400);
                 }
             }
+        }
+        if (user.getAttribute(LAST_LOGIN) != null)
+        {
+            user.setAttribute(PREVIOUS_LOGIN, user.getAttribute(LAST_LOGIN));
         }
         user.setAttribute(LAST_LOGIN, Collections.singletonList(String.valueOf(System.currentTimeMillis())));
     }
