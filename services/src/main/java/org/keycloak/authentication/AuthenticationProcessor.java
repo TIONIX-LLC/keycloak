@@ -1161,7 +1161,7 @@ public class AuthenticationProcessor {
                 }
             }
         }
-        if (user.getAttribute(LAST_LOGIN) != null)
+        if (user.getFirstAttribute(LAST_LOGIN) != null)
         {
             user.setAttribute(PREVIOUS_LOGIN, user.getAttribute(LAST_LOGIN));
         }

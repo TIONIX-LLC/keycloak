@@ -24,6 +24,7 @@ import org.keycloak.events.Event;
 import org.keycloak.events.EventListenerProvider;
 import org.keycloak.events.EventType;
 import org.keycloak.events.admin.AdminEvent;
+import static org.keycloak.models.Constants.NOTIFICATIONS_ENABLED;
 import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.RealmModel;
 import org.keycloak.models.RealmProvider;
@@ -56,7 +57,8 @@ public class EmailEventListenerProvider implements EventListenerProvider {
             if (event.getRealmId() != null && event.getUserId() != null) {
                 RealmModel realm = model.getRealm(event.getRealmId());
                 UserModel user = session.users().getUserById(event.getUserId(), realm);
-                if (user != null && user.getEmail() != null && user.isEmailVerified()) {
+                if (user != null && user.getEmail() != null && user.isEmailVerified()
+                        && Boolean.parseBoolean(user.getFirstAttribute(NOTIFICATIONS_ENABLED))) {
                     try {
                         emailTemplateProvider.setRealm(realm).setUser(user).sendEvent(event);
                     } catch (EmailException e) {

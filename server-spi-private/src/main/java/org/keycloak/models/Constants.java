@@ -110,4 +110,6 @@ public final class Constants {
     public static final String LAST_LOGIN = "tvs.lastLogin";
     public static final String ENABLED_TILL = "tvs.enabledTill";
     public static final String PREVIOUS_LOGIN = "tvs.previousLogin";
+    public static final String NOTIFICATIONS_ENABLED = "tvs.notificationsEnabled";
+    public static final String PATRONYMIC = "tvs.patronymic";
 }
