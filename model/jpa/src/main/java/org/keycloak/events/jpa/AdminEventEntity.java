@@ -39,6 +39,9 @@ public class AdminEventEntity implements Serializable {
     
     @Column(name="REALM_ID")
     private String realmId;
+
+    @Column(name="HOSTNAME")
+    private String hostName;
     
     @Column(name="OPERATION_TYPE")
     private String operationType;
@@ -89,6 +92,14 @@ public class AdminEventEntity implements Serializable {
 
     public void setRealmId(String realmId) {
         this.realmId = realmId;
+    }
+
+    public String getHostName() {
+        return hostName;
+    }
+
+    public void setHostName(String hostName) {
+        this.hostName = hostName;
     }
 
     public String getOperationType() {

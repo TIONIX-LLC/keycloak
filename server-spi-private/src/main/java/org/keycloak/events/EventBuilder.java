@@ -17,8 +17,11 @@
 
 package org.keycloak.events;
 
+import java.net.InetAddress;
+import java.net.UnknownHostException;
 import org.jboss.logging.Logger;
 import org.keycloak.common.ClientConnection;
+import org.keycloak.common.util.HostUtils;
 import org.keycloak.common.util.Time;
 import org.keycloak.models.ClientModel;
 import org.keycloak.models.KeycloakSession;
@@ -43,10 +46,17 @@ public class EventBuilder {
     private RealmModel realm;
     private Event event;
 
-    public EventBuilder(RealmModel realm, KeycloakSession session, ClientConnection clientConnection) {
-        this.realm = realm;
+    public EventBuilder(RealmModel realm, KeycloakSession session, Event event) {
+        this(event, realm, session, event.getIpAddress());
+    }
 
-        event = new Event();
+    public EventBuilder(RealmModel realm, KeycloakSession session, ClientConnection clientConnection) {
+        this(new Event(), realm, session, clientConnection.getRemoteAddr());
+    }
+
+    private EventBuilder(Event event, RealmModel realm, KeycloakSession session, String ipAddress) {
+        this.realm = realm;
+        this.event = event;
 
         if (realm.isEventsEnabled()) {
             EventStoreProvider store = session.getProvider(EventStoreProvider.class);
@@ -70,7 +80,12 @@ public class EventBuilder {
         }
 
         realm(realm);
-        ipAddress(clientConnection.getRemoteAddr());
+        ipAddress(ipAddress);
+        try {
+            hostName(InetAddress.getLocalHost().getHostName());
+        } catch (UnknownHostException ignore) {
+            hostName(HostUtils.getHostName());
+        }
     }
 
     private EventBuilder(EventStoreProvider store, List<EventListenerProvider> listeners, RealmModel realm, Event event) {
@@ -107,6 +122,21 @@ public class EventBuilder {
 
     public EventBuilder user(String userId) {
         event.setUserId(userId);
+        return this;
+    }
+
+    public EventBuilder vm(String vmId) {
+        event.setVmId(vmId);
+        return this;
+    }
+
+    public EventBuilder node(String nodeId) {
+        event.setNodeId(nodeId);
+        return this;
+    }
+
+    public EventBuilder hostName(String hostName) {
+        event.setHostName(hostName);
         return this;
     }
 

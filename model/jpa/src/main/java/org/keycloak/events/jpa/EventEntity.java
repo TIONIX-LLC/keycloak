@@ -49,6 +49,15 @@ public class EventEntity implements Serializable {
     @Column(name="USER_ID")
     private String userId;
 
+    @Column(name="VM_ID")
+    private String vmId;
+
+    @Column(name="NODE_ID")
+    private String nodeId;
+
+    @Column(name="HOSTNAME")
+    private String hostName;
+
     @Column(name="SESSION_ID")
     private String sessionId;
 
@@ -107,6 +116,30 @@ public class EventEntity implements Serializable {
 
     public void setUserId(String userId) {
         this.userId = userId;
+    }
+
+    public String getVmId() {
+        return vmId;
+    }
+
+    public void setVmId(String vmId) {
+        this.vmId = vmId;
+    }
+
+    public String getNodeId() {
+        return nodeId;
+    }
+
+    public void setNodeId(String nodeId) {
+        this.nodeId = nodeId;
+    }
+
+    public String getHostName() {
+        return hostName;
+    }
+
+    public void setHostName(String hostname) {
+        this.hostName = hostname;
     }
 
     public String getSessionId() {
