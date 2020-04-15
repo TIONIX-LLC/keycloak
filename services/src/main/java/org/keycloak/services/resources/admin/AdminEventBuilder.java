@@ -50,7 +50,8 @@ public class AdminEventBuilder {
     private AdminEvent adminEvent;
 
     public AdminEventBuilder(RealmModel realm, AdminAuth auth, KeycloakSession session, ClientConnection clientConnection) {
-        this(realm, auth, session, new AdminEvent(), clientConnection);
+        this(realm, auth, session, new AdminEvent());
+        authIpAddress(clientConnection.getRemoteAddr());
         try {
             hostName(InetAddress.getLocalHost().getHostName());
         } catch (UnknownHostException ignore) {
@@ -58,7 +59,7 @@ public class AdminEventBuilder {
         }
     }
 
-    public AdminEventBuilder(RealmModel realm, AdminAuth auth, KeycloakSession session, AdminEvent adminEvent, ClientConnection clientConnection) {
+    public AdminEventBuilder(RealmModel realm, AdminAuth auth, KeycloakSession session, AdminEvent adminEvent) {
         this.realm = realm;
         this.adminEvent = adminEvent;
         this.listeners = new HashMap<>();
@@ -67,7 +68,6 @@ public class AdminEventBuilder {
         authRealm(auth.getRealm());
         authClient(auth.getClient());
         authUser(auth.getUser());
-        authIpAddress(clientConnection.getRemoteAddr());
     }
 
     public AdminEventBuilder realm(RealmModel realm) {

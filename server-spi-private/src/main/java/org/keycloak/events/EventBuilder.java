@@ -46,15 +46,17 @@ public class EventBuilder {
     private RealmModel realm;
     private Event event;
 
-    public EventBuilder(RealmModel realm, KeycloakSession session, Event event) {
-        this(event, realm, session, event.getIpAddress());
-    }
-
     public EventBuilder(RealmModel realm, KeycloakSession session, ClientConnection clientConnection) {
-        this(new Event(), realm, session, clientConnection.getRemoteAddr());
+        this(new Event(), realm, session);
+        ipAddress(clientConnection.getRemoteAddr());
+        try {
+            hostName(InetAddress.getLocalHost().getHostName());
+        } catch (UnknownHostException ignore) {
+            hostName(HostUtils.getHostName());
+        }
     }
 
-    private EventBuilder(Event event, RealmModel realm, KeycloakSession session, String ipAddress) {
+    public EventBuilder(Event event, RealmModel realm, KeycloakSession session) {
         this.realm = realm;
         this.event = event;
 
@@ -78,14 +80,7 @@ public class EventBuilder {
                 }
             }
         }
-
         realm(realm);
-        ipAddress(ipAddress);
-        try {
-            hostName(InetAddress.getLocalHost().getHostName());
-        } catch (UnknownHostException ignore) {
-            hostName(HostUtils.getHostName());
-        }
     }
 
     private EventBuilder(EventStoreProvider store, List<EventListenerProvider> listeners, RealmModel realm, Event event) {
