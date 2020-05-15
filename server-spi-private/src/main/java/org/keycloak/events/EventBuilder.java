@@ -47,7 +47,7 @@ public class EventBuilder {
     private Event event;
 
     public EventBuilder(RealmModel realm, KeycloakSession session, ClientConnection clientConnection) {
-        this(new Event(), realm, session);
+        this(realm, session, new Event());
         ipAddress(clientConnection.getRemoteAddr());
         try {
             hostName(InetAddress.getLocalHost().getHostName());
@@ -56,7 +56,7 @@ public class EventBuilder {
         }
     }
 
-    public EventBuilder(Event event, RealmModel realm, KeycloakSession session) {
+    public EventBuilder(RealmModel realm, KeycloakSession session, Event event) {
         this.realm = realm;
         this.event = event;
 

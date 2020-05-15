@@ -139,6 +139,7 @@ public enum EventType {
     VM_STARTED(true),
     VM_STARTED_ERROR(true),
     VM_STOPPED(true),
+    VM_ERROR(true),
     COMPUTE_NODE_ANNOUNCE(false),
     COMPUTE_NODE_ERROR(true),
     LDAP_AUTH_SUCCESS(true),
