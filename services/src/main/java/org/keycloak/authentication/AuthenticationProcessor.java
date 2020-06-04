@@ -46,6 +46,7 @@ import static org.keycloak.models.Constants.ENABLED_TILL;
 import static org.keycloak.models.Constants.PREVIOUS_LOGIN;
 import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.RealmModel;
+import org.keycloak.models.RoleModel;
 import org.keycloak.models.UserModel;
 import org.keycloak.models.UserSessionModel;
 import org.keycloak.models.utils.AuthenticationFlowResolver;
@@ -1147,10 +1148,10 @@ public class AuthenticationProcessor {
     }
 
     private void checkActivityUser(UserModel user) {
-        if (!user.hasRole(realm.getRole(AdminRoles.ADMIN))) {
+        RoleModel adminRole = realm.getRole(AdminRoles.ADMIN);
+        if (adminRole == null || !user.hasRole(adminRole)) {
             boolean disableNotActiveUser = realm.getAttribute(DISABLE_NOT_ACTIVE_USER, false);
-            if (disableNotActiveUser && realm.getAttribute(DISABLE_NOT_ACTIVE_USER_PERIOD) != null
-                    && user.getFirstAttribute(LAST_LOGIN) != null) {
+            if (disableNotActiveUser && realm.getAttribute(DISABLE_NOT_ACTIVE_USER_PERIOD) != null && user.getFirstAttribute(LAST_LOGIN) != null) {
                 long lastLogin = Long.parseLong(user.getFirstAttribute(LAST_LOGIN));
                 long disableNotActiveUserPeriod = Long.parseLong(realm.getAttribute(DISABLE_NOT_ACTIVE_USER_PERIOD));
                 if (lastLogin + disableNotActiveUserPeriod * 1000 < System.currentTimeMillis()) {
@@ -1161,8 +1162,7 @@ public class AuthenticationProcessor {
                 }
             }
         }
-        if (user.getFirstAttribute(LAST_LOGIN) != null)
-        {
+        if (user.getFirstAttribute(LAST_LOGIN) != null) {
             user.setAttribute(PREVIOUS_LOGIN, user.getAttribute(LAST_LOGIN));
         }
         user.setAttribute(LAST_LOGIN, Collections.singletonList(String.valueOf(System.currentTimeMillis())));
