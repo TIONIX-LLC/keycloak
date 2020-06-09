@@ -117,6 +117,7 @@ public class RealmsAdminResource {
             rep.setId(realm.getId());
             rep.setRealm(realm.getName());
             rep.setDisplayName(realm.getDisplayName());
+            rep.setMasterAdminClientId(realm.getMasterAdminClient().getId());
             rep.setEnabled(realm.isEnabled());
             reps.add(rep);
         }
