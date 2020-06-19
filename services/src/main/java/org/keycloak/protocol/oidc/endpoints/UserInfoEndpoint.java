@@ -195,6 +195,12 @@ public class UserInfoEndpoint {
 
         Map<String, Object> claims = new HashMap<String, Object>();
         claims.put("sub", userModel.getId());
+        if (userInfo.getRealmAccess() != null) {
+            claims.put("realm_access", userInfo.getRealmAccess());
+        }
+        if (userInfo.getResourceAccess() != null && !userInfo.getResourceAccess().isEmpty()) {
+            claims.put("resource_access", userInfo.getResourceAccess());
+        }
         claims.putAll(userInfo.getOtherClaims());
 
         Response.ResponseBuilder responseBuilder;
