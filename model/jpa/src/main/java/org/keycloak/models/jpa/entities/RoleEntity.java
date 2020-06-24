@@ -17,6 +17,7 @@
 
 package org.keycloak.models.jpa.entities;
 
+import java.io.Serializable;
 import org.hibernate.annotations.BatchSize;
 import org.hibernate.annotations.Fetch;
 import org.hibernate.annotations.FetchMode;
@@ -65,7 +66,7 @@ import java.util.Set;
         @NamedQuery(name="getRealmRoleIdByName", query="select role.id from RoleEntity role where role.clientRole = false and role.name = :name and role.realm.id = :realm")
 })
 
-public class RoleEntity {
+public class RoleEntity implements Serializable {
     @Id
     @Column(name="ID", length = 36)
     @Access(AccessType.PROPERTY) // we do this because relationships often fetch id, but not entity.  This avoids an extra SQL

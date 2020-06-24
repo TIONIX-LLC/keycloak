@@ -46,7 +46,7 @@ import java.io.Serializable;
 @Table(name="OFFLINE_USER_SESSION")
 @Entity
 @IdClass(PersistentUserSessionEntity.Key.class)
-public class PersistentUserSessionEntity {
+public class PersistentUserSessionEntity implements Serializable {
 
     @Id
     @Column(name="USER_SESSION_ID", length = 36)

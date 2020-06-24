@@ -43,7 +43,7 @@ import javax.persistence.Table;
 @Entity
 @Table(name="CLIENT_SCOPE_CLIENT")
 @IdClass(ClientScopeClientMappingEntity.Key.class)
-public class ClientScopeClientMappingEntity {
+public class ClientScopeClientMappingEntity implements Serializable {
 
     @Id
     @ManyToOne(fetch= FetchType.LAZY)

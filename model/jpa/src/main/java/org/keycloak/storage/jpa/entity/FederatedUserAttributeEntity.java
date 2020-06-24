@@ -17,6 +17,7 @@
 
 package org.keycloak.storage.jpa.entity;
 
+import java.io.Serializable;
 import javax.persistence.Access;
 import javax.persistence.AccessType;
 import javax.persistence.Column;
@@ -41,7 +42,7 @@ import javax.persistence.Table;
 })
 @Table(name="FED_USER_ATTRIBUTE")
 @Entity
-public class FederatedUserAttributeEntity {
+public class FederatedUserAttributeEntity implements Serializable {
 
     @Id
     @Column(name="ID", length = 36)

@@ -17,6 +17,7 @@
 
 package org.keycloak.events.jpa;
 
+import java.io.Serializable;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Id;
@@ -27,7 +28,7 @@ import javax.persistence.Table;
  */
 @Entity
 @Table(name="ADMIN_EVENT_ENTITY")
-public class AdminEventEntity {
+public class AdminEventEntity implements Serializable {
     
     @Id
     @Column(name="ID", length = 36)
@@ -38,6 +39,9 @@ public class AdminEventEntity {
     
     @Column(name="REALM_ID")
     private String realmId;
+
+    @Column(name="HOSTNAME")
+    private String hostName;
     
     @Column(name="OPERATION_TYPE")
     private String operationType;
@@ -88,6 +92,14 @@ public class AdminEventEntity {
 
     public void setRealmId(String realmId) {
         this.realmId = realmId;
+    }
+
+    public String getHostName() {
+        return hostName;
+    }
+
+    public void setHostName(String hostName) {
+        this.hostName = hostName;
     }
 
     public String getOperationType() {

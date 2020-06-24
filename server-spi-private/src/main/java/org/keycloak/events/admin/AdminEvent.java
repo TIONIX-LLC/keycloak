@@ -25,6 +25,7 @@ public class AdminEvent {
     private long time;
     
     private String realmId;
+    private String hostName;
 
     private AuthDetails authDetails;
 
@@ -65,6 +66,14 @@ public class AdminEvent {
 
     public void setRealmId(String realmId) {
         this.realmId = realmId;
+    }
+
+    public String getHostName() {
+        return hostName;
+    }
+
+    public void setHostName(String hostName) {
+        this.hostName = hostName;
     }
 
     /**

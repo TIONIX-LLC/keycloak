@@ -17,6 +17,7 @@
 
 package org.keycloak.models.jpa.entities;
 
+import java.io.Serializable;
 import org.hibernate.annotations.Nationalized;
 
 import javax.persistence.Access;
@@ -39,7 +40,7 @@ import javax.persistence.Table;
 })
 @Table(name = "ROLE_ATTRIBUTE")
 @Entity
-public class RoleAttributeEntity {
+public class RoleAttributeEntity implements Serializable {
 
     @Id
     @Column(name = "ID", length = 36)

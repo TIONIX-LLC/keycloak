@@ -43,7 +43,7 @@ import javax.persistence.Table;
 @Entity
 @Table(name="DEFAULT_CLIENT_SCOPE")
 @IdClass(DefaultClientScopeRealmMappingEntity.Key.class)
-public class DefaultClientScopeRealmMappingEntity {
+public class DefaultClientScopeRealmMappingEntity implements Serializable {
 
     @Id
     @ManyToOne(fetch= FetchType.LAZY)

@@ -45,7 +45,7 @@ import javax.persistence.Table;
 @Entity
 @Table(name="USER_CONSENT_CLIENT_SCOPE")
 @IdClass(UserConsentClientScopeEntity.Key.class)
-public class UserConsentClientScopeEntity {
+public class UserConsentClientScopeEntity implements Serializable {
 
     @Id
     @ManyToOne(fetch= FetchType.LAZY)

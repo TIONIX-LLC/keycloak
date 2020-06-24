@@ -18,6 +18,7 @@
 
 package org.keycloak.authorization.jpa.entities;
 
+import java.io.Serializable;
 import javax.persistence.Access;
 import javax.persistence.AccessType;
 import javax.persistence.CascadeType;
@@ -71,7 +72,7 @@ import org.hibernate.annotations.FetchMode;
                 @NamedQuery(name="deleteResourceByResourceServer", query="delete from ResourceEntity r where r.resourceServer.id = :serverId")
         }
 )
-public class ResourceEntity {
+public class ResourceEntity implements Serializable {
 
     @Id
     @Column(name="ID", length = 36)

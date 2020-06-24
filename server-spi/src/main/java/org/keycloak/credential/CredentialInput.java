@@ -26,4 +26,8 @@ public interface CredentialInput {
     String getCredentialId();
     String getType();
     String getChallengeResponse();
+
+    default String getOldPassword() {
+        return null;
+    }
 }

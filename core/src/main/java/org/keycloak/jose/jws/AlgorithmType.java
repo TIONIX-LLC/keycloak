@@ -26,6 +26,7 @@ public enum AlgorithmType {
     RSA,
     HMAC,
     AES,
-    ECDSA
+    ECDSA,
+    GOST3410_2012
 
 }

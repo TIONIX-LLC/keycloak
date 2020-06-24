@@ -16,6 +16,8 @@
  */
 package org.keycloak.services.resources.account;
 
+import java.util.Collections;
+import org.apache.commons.lang.StringUtils;
 import org.jboss.logging.Logger;
 import org.keycloak.authorization.AuthorizationProvider;
 import org.keycloak.authorization.model.PermissionTicket;
@@ -42,6 +44,8 @@ import org.keycloak.forms.login.LoginFormsProvider;
 import org.keycloak.models.AccountRoles;
 import org.keycloak.models.AuthenticatedClientSessionModel;
 import org.keycloak.models.ClientModel;
+import static org.keycloak.models.Constants.NOTIFICATIONS_ENABLED;
+import static org.keycloak.models.Constants.PATRONYMIC;
 import org.keycloak.models.FederatedIdentityModel;
 import org.keycloak.models.IdentityProviderModel;
 import org.keycloak.models.KeycloakSession;
@@ -359,6 +363,9 @@ public class AccountFormService extends AbstractSecuredLocalService {
             user.setFirstName(formData.getFirst("firstName"));
             user.setLastName(formData.getFirst("lastName"));
 
+            user.setAttribute(PATRONYMIC, StringUtils.isEmpty(formData.getFirst(PATRONYMIC)) ? Collections.emptyList() : Collections.singletonList(formData.getFirst(PATRONYMIC)));
+            user.setAttribute(NOTIFICATIONS_ENABLED, Collections.singletonList(String.valueOf("on".equalsIgnoreCase(formData.getFirst(NOTIFICATIONS_ENABLED)))));
+
             AttributeFormDataProcessor.process(formData, realm, user);
 
             event.success();
@@ -564,7 +571,7 @@ public class AccountFormService extends AbstractSecuredLocalService {
                 return account.setError(Status.OK, Messages.MISSING_PASSWORD).createResponse(AccountPages.PASSWORD);
             }
 
-            UserCredentialModel cred = UserCredentialModel.password(password);
+            UserCredentialModel cred = UserCredentialModel.password(password, null);
             if (!session.userCredentialManager().isValid(realm, user, cred)) {
                 setReferrerOnPage();
                 errorEvent.error(Errors.INVALID_USER_CREDENTIALS);
@@ -585,7 +592,7 @@ public class AccountFormService extends AbstractSecuredLocalService {
         }
 
         try {
-            session.userCredentialManager().updateCredential(realm, user, UserCredentialModel.password(passwordNew, false));
+            session.userCredentialManager().updateCredential(realm, user, UserCredentialModel.password(passwordNew, requireCurrent ? password : null, false));
         } catch (ReadOnlyException mre) {
             setReferrerOnPage();
             errorEvent.error(Errors.NOT_ALLOWED);
@@ -1081,7 +1088,7 @@ public class AccountFormService extends AbstractSecuredLocalService {
             event.clone().event(EventType.UPDATE_EMAIL).detail(Details.PREVIOUS_EMAIL, oldEmail).detail(Details.UPDATED_EMAIL, email).success();
         }
 
-        if (realm.isRegistrationEmailAsUsername()) {
+        if (realm.isRegistrationAllowed() && realm.isRegistrationEmailAsUsername()) {
             if (!realm.isDuplicateEmailsAllowed()) {
                 UserModel existing = session.users().getUserByEmail(email, realm);
                 if (existing != null && !existing.getId().equals(user.getId())) {

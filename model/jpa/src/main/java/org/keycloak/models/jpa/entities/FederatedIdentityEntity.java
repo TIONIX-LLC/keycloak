@@ -44,7 +44,7 @@ import java.io.Serializable;
 @Table(name="FEDERATED_IDENTITY")
 @Entity
 @IdClass(FederatedIdentityEntity.Key.class)
-public class FederatedIdentityEntity {
+public class FederatedIdentityEntity implements Serializable {
 
     @Id
     @ManyToOne(fetch = FetchType.LAZY)

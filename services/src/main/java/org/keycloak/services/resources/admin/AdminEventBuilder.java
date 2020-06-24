@@ -16,8 +16,16 @@
  */
 package org.keycloak.services.resources.admin;
 
+import java.io.IOException;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Set;
+import javax.ws.rs.core.UriInfo;
 import org.jboss.logging.Logger;
 import org.keycloak.common.ClientConnection;
+import org.keycloak.common.util.HostUtils;
 import org.keycloak.common.util.Time;
 import org.keycloak.events.EventListenerProvider;
 import org.keycloak.events.EventStoreProvider;
@@ -32,12 +40,6 @@ import org.keycloak.models.UserModel;
 import org.keycloak.services.ServicesLogger;
 import org.keycloak.util.JsonSerialization;
 
-import javax.ws.rs.core.UriInfo;
-import java.io.IOException;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Set;
-
 public class AdminEventBuilder {
 
     protected static final Logger logger = Logger.getLogger(AdminEventBuilder.class);
@@ -48,17 +50,24 @@ public class AdminEventBuilder {
     private AdminEvent adminEvent;
 
     public AdminEventBuilder(RealmModel realm, AdminAuth auth, KeycloakSession session, ClientConnection clientConnection) {
-        this.realm = realm;
-        adminEvent = new AdminEvent();
+        this(realm, auth, session, new AdminEvent());
+        authIpAddress(clientConnection.getRemoteAddr());
+        try {
+            hostName(InetAddress.getLocalHost().getHostName());
+        } catch (UnknownHostException ignore) {
+            hostName(HostUtils.getHostName());
+        }
+    }
 
+    public AdminEventBuilder(RealmModel realm, AdminAuth auth, KeycloakSession session, AdminEvent adminEvent) {
+        this.realm = realm;
+        this.adminEvent = adminEvent;
         this.listeners = new HashMap<>();
         updateStore(session);
         addListeners(session);
-
         authRealm(auth.getRealm());
         authClient(auth.getClient());
         authUser(auth.getUser());
-        authIpAddress(clientConnection.getRemoteAddr());
     }
 
     public AdminEventBuilder realm(RealmModel realm) {
@@ -68,6 +77,11 @@ public class AdminEventBuilder {
 
     public AdminEventBuilder realm(String realmId) {
         adminEvent.setRealmId(realmId);
+        return this;
+    }
+
+    public AdminEventBuilder hostName(String hostName) {
+        adminEvent.setHostName(hostName);
         return this;
     }
 

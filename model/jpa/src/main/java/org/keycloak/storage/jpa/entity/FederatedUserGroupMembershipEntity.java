@@ -47,7 +47,7 @@ import java.io.Serializable;
 @Table(name="FED_USER_GROUP_MEMBERSHIP")
 @Entity
 @IdClass(FederatedUserGroupMembershipEntity.Key.class)
-public class FederatedUserGroupMembershipEntity {
+public class FederatedUserGroupMembershipEntity implements Serializable {
 
     @Id
     @Column(name = "USER_ID")

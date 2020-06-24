@@ -45,7 +45,7 @@ import java.io.Serializable;
 @Table(name="USER_GROUP_MEMBERSHIP")
 @Entity
 @IdClass(UserGroupMembershipEntity.Key.class)
-public class UserGroupMembershipEntity {
+public class UserGroupMembershipEntity implements Serializable {
 
     @Id
     @ManyToOne(fetch= FetchType.LAZY)

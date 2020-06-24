@@ -18,6 +18,7 @@
 
 package org.keycloak.authorization.jpa.entities;
 
+import java.io.Serializable;
 import org.keycloak.representations.idm.authorization.DecisionStrategy;
 import org.keycloak.representations.idm.authorization.PolicyEnforcementMode;
 
@@ -31,7 +32,7 @@ import javax.persistence.Table;
  */
 @Entity
 @Table(name = "RESOURCE_SERVER")
-public class ResourceServerEntity {
+public class ResourceServerEntity implements Serializable {
 
     @Id
     @Column(name="ID", length = 36)

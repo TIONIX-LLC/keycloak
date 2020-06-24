@@ -30,7 +30,17 @@ public interface PasswordPolicyProvider extends Provider {
     String INT_CONFIG_TYPE = "int";
 
     PolicyError validate(RealmModel realm, UserModel user, String password);
+
+    default PolicyError validate(RealmModel realm, UserModel user, String password, String oldPassword) {
+        return validate(realm, user, password);
+    }
+
     PolicyError validate(String user, String password);
+
+    default PolicyError validate(String user, String password, String oldPassword) {
+        return validate(user,password);
+    }
+
     Object parseConfig(String value);
 
     default Integer parseInteger(String value, Integer defaultValue) {

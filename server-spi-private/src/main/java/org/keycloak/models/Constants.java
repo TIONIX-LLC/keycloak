@@ -101,4 +101,15 @@ public final class Constants {
     public static final Pattern CFG_DELIMITER_PATTERN = Pattern.compile("\\s*" + CFG_DELIMITER + "\\s*");
 
     public static final String OFFLINE_ACCESS_SCOPE_CONSENT_TEXT = "${offlineAccessScopeConsentText}";
+
+    public static final String SESSION_CONSTRAINT_ENABLED = "tvs.sessionConstraintEnabled";
+    public static final String SESSION_CONSTRAINT_COUNT = "tvs.sessionConstraintCount";
+    public static final String SESSION_CONSTRAINT_ACTION = "tvs.sessionConstraintAction";
+    public static final String DISABLE_NOT_ACTIVE_USER = "tvs.disableNotActiveUser";
+    public static final String DISABLE_NOT_ACTIVE_USER_PERIOD = "tvs.disableNotActiveUserPeriod";
+    public static final String LAST_LOGIN = "tvs.lastLogin";
+    public static final String ENABLED_TILL = "tvs.enabledTill";
+    public static final String PREVIOUS_LOGIN = "tvs.previousLogin";
+    public static final String NOTIFICATIONS_ENABLED = "tvs.notificationsEnabled";
+    public static final String PATRONYMIC = "tvs.patronymic";
 }

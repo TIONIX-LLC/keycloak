@@ -18,6 +18,7 @@
 
 package org.keycloak.authorization.jpa.entities;
 
+import java.io.Serializable;
 import javax.persistence.Access;
 import javax.persistence.AccessType;
 import javax.persistence.Column;
@@ -49,7 +50,7 @@ import java.util.List;
                 @NamedQuery(name="deleteScopeByResourceServer", query="delete from ScopeEntity s where s.resourceServer.id = :serverId")
         }
 )
-public class ScopeEntity {
+public class ScopeEntity implements Serializable {
 
     @Id
     @Column(name="ID", length = 36)

@@ -17,6 +17,7 @@
 
 package org.keycloak.models.jpa.entities;
 
+import java.io.Serializable;
 import org.hibernate.annotations.Nationalized;
 
 import javax.persistence.Access;
@@ -41,7 +42,7 @@ import java.util.Collection;
  */
 @Table(name="AUTHENTICATION_FLOW")
 @Entity
-public class AuthenticationFlowEntity {
+public class AuthenticationFlowEntity implements Serializable {
     @Id
     @Column(name="ID", length = 36)
     @Access(AccessType.PROPERTY) // we do this because relationships often fetch id, but not entity.  This avoids an extra SQL

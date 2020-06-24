@@ -17,6 +17,7 @@
 
 package org.keycloak.models.jpa.entities;
 
+import java.io.Serializable;
 import org.hibernate.annotations.BatchSize;
 import org.hibernate.annotations.Fetch;
 import org.hibernate.annotations.FetchMode;
@@ -64,7 +65,7 @@ import java.util.Collection;
         @UniqueConstraint(columnNames = { "REALM_ID", "USERNAME" }),
         @UniqueConstraint(columnNames = { "REALM_ID", "EMAIL_CONSTRAINT" })
 })
-public class UserEntity {
+public class UserEntity implements Serializable {
     @Id
     @Column(name="ID", length = 36)
     @Access(AccessType.PROPERTY) // we do this because relationships often fetch id, but not entity.  This avoids an extra SQL

@@ -19,6 +19,7 @@ package org.keycloak.storage.jpa.entity;
 
 import org.keycloak.models.jpa.entities.UserEntity;
 
+import java.io.Serializable;
 import javax.persistence.Access;
 import javax.persistence.AccessType;
 import javax.persistence.CascadeType;
@@ -52,7 +53,7 @@ import java.util.Collection;
 })
 @Table(name="FED_USER_CREDENTIAL")
 @Entity
-public class FederatedUserCredentialEntity {
+public class FederatedUserCredentialEntity implements Serializable {
     @Id
     @Column(name="ID", length = 36)
     @Access(AccessType.PROPERTY) // we do this because relationships often fetch id, but not entity.  This avoids an extra SQL

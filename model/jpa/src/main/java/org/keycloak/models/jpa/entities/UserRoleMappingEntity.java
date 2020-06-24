@@ -48,7 +48,7 @@ import java.io.Serializable;
 @Table(name="USER_ROLE_MAPPING")
 @Entity
 @IdClass(UserRoleMappingEntity.Key.class)
-public class UserRoleMappingEntity  {
+public class UserRoleMappingEntity implements Serializable {
 
     @Id
     @ManyToOne(fetch= FetchType.LAZY)

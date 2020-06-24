@@ -17,6 +17,7 @@
 
 package org.keycloak.models.jpa.entities;
 
+import java.io.Serializable;
 import org.hibernate.annotations.Nationalized;
 
 import javax.persistence.Access;
@@ -57,7 +58,7 @@ import java.util.Set;
         @NamedQuery(name="findClientIdByClientId", query="select client.id from ClientEntity client where client.clientId = :clientId and client.realm.id = :realm"),
         @NamedQuery(name="findClientByClientId", query="select client from ClientEntity client where client.clientId = :clientId and client.realm.id = :realm"),
 })
-public class ClientEntity {
+public class ClientEntity implements Serializable {
 
     @Id
     @Column(name="ID", length = 36)

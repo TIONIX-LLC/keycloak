@@ -17,6 +17,7 @@
 
 package org.keycloak.models.jpa.entities;
 
+import java.io.Serializable;
 import javax.persistence.Access;
 import javax.persistence.AccessType;
 import javax.persistence.Column;
@@ -36,7 +37,7 @@ import java.util.Date;
 @NamedQueries({
         @NamedQuery(name = "getLatest", query = "select m from MigrationModelEntity m ORDER BY m.updatedTime DESC")
 })
-public class MigrationModelEntity {
+public class MigrationModelEntity implements Serializable {
     public static final String SINGLETON_ID = "SINGLETON";
     @Id
     @Column(name="ID", length = 36)

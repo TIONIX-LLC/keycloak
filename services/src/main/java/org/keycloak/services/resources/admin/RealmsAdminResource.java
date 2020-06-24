@@ -114,7 +114,11 @@ public class RealmsAdminResource {
             reps.add(ModelToRepresentation.toRepresentation(realm, false));
         } else if (AdminPermissions.realms(session, auth).isAdmin(realm)) {
             RealmRepresentation rep = new RealmRepresentation();
+            rep.setId(realm.getId());
             rep.setRealm(realm.getName());
+            rep.setDisplayName(realm.getDisplayName());
+            rep.setMasterAdminClientId(realm.getMasterAdminClient().getId());
+            rep.setEnabled(realm.isEnabled());
             reps.add(rep);
         }
     }

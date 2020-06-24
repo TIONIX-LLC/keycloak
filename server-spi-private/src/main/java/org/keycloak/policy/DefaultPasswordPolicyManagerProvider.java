@@ -38,8 +38,18 @@ public class DefaultPasswordPolicyManagerProvider implements PasswordPolicyManag
 
     @Override
     public PolicyError validate(RealmModel realm, UserModel user, String password) {
-        for (PasswordPolicyProvider p : getProviders(realm, session)) {
-            PolicyError policyError = p.validate(realm, user, password);
+       return validate(realm, user, password, null);
+    }
+
+    @Override
+    public PolicyError validate(String user, String password) {
+        return validate(user, password, null);
+    }
+
+    @Override
+    public PolicyError validate(String user, String password, String oldPassword) {
+        for (PasswordPolicyProvider p : getProviders(session)) {
+            PolicyError policyError = p.validate(user, password, oldPassword);
             if (policyError != null) {
                 return policyError;
             }
@@ -48,9 +58,9 @@ public class DefaultPasswordPolicyManagerProvider implements PasswordPolicyManag
     }
 
     @Override
-    public PolicyError validate(String user, String password) {
-        for (PasswordPolicyProvider p : getProviders(session)) {
-            PolicyError policyError = p.validate(user, password);
+    public PolicyError validate(RealmModel realm, UserModel user, String password, String oldPassword) {
+        for (PasswordPolicyProvider p : getProviders(realm, session)) {
+            PolicyError policyError = p.validate(realm, user, password, oldPassword);
             if (policyError != null) {
                 return policyError;
             }

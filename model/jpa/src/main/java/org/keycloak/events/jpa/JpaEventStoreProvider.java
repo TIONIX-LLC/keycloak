@@ -112,6 +112,9 @@ public class JpaEventStoreProvider implements EventStoreProvider {
         eventEntity.setRealmId(event.getRealmId());
         eventEntity.setClientId(event.getClientId());
         eventEntity.setUserId(event.getUserId());
+        eventEntity.setVmId(event.getVmId());
+        eventEntity.setNodeId(event.getNodeId());
+        eventEntity.setHostName(event.getHostName());
         eventEntity.setSessionId(event.getSessionId());
         eventEntity.setIpAddress(event.getIpAddress());
         eventEntity.setError(event.getError());
@@ -130,6 +133,9 @@ public class JpaEventStoreProvider implements EventStoreProvider {
         event.setRealmId(eventEntity.getRealmId());
         event.setClientId(eventEntity.getClientId());
         event.setUserId(eventEntity.getUserId());
+        event.setVmId(eventEntity.getVmId());
+        event.setNodeId(eventEntity.getNodeId());
+        event.setHostName(eventEntity.getHostName());
         event.setSessionId(eventEntity.getSessionId());
         event.setIpAddress(eventEntity.getIpAddress());
         event.setError(eventEntity.getError());
@@ -147,6 +153,7 @@ public class JpaEventStoreProvider implements EventStoreProvider {
         adminEventEntity.setId(UUID.randomUUID().toString());
         adminEventEntity.setTime(adminEvent.getTime());
         adminEventEntity.setRealmId(adminEvent.getRealmId());
+        adminEventEntity.setHostName(adminEvent.getHostName());
         setAuthDetails(adminEventEntity, adminEvent.getAuthDetails());
         adminEventEntity.setOperationType(adminEvent.getOperationType().toString());
 
@@ -167,6 +174,7 @@ public class JpaEventStoreProvider implements EventStoreProvider {
         AdminEvent adminEvent = new AdminEvent();
         adminEvent.setTime(adminEventEntity.getTime());
         adminEvent.setRealmId(adminEventEntity.getRealmId());
+        adminEvent.setHostName(adminEventEntity.getHostName());
         setAuthDetails(adminEvent, adminEventEntity);
         adminEvent.setOperationType(OperationType.valueOf(adminEventEntity.getOperationType()));
 

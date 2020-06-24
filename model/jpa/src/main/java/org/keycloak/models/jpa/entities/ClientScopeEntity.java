@@ -17,6 +17,7 @@
 
 package org.keycloak.models.jpa.entities;
 
+import java.io.Serializable;
 import org.hibernate.annotations.Nationalized;
 
 import javax.persistence.Access;
@@ -40,7 +41,7 @@ import java.util.Collection;
  */
 @Entity
 @Table(name="CLIENT_SCOPE", uniqueConstraints = {@UniqueConstraint(columnNames = {"REALM_ID", "NAME"})})
-public class ClientScopeEntity {
+public class ClientScopeEntity implements Serializable {
 
     @Id
     @Column(name="ID", length = 36)

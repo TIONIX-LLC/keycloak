@@ -17,25 +17,36 @@
 
 package org.keycloak.authentication;
 
+import java.time.Instant;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.TimeZone;
+import java.util.stream.Collectors;
 import org.jboss.logging.Logger;
 import org.jboss.resteasy.spi.HttpRequest;
 import org.keycloak.authentication.authenticators.browser.AbstractUsernameFormAuthenticator;
 import org.keycloak.authentication.authenticators.client.ClientAuthUtil;
 import org.keycloak.common.ClientConnection;
 import org.keycloak.common.util.Time;
-import org.keycloak.credential.CredentialModel;
 import org.keycloak.events.Details;
 import org.keycloak.events.Errors;
 import org.keycloak.events.EventBuilder;
 import org.keycloak.forms.login.LoginFormsProvider;
+import org.keycloak.models.AdminRoles;
 import org.keycloak.models.AuthenticationExecutionModel;
 import org.keycloak.models.AuthenticationFlowModel;
 import org.keycloak.models.AuthenticatorConfigModel;
 import org.keycloak.models.ClientModel;
 import org.keycloak.models.ClientSessionContext;
 import org.keycloak.models.Constants;
+import static org.keycloak.models.Constants.ENABLED_TILL;
+import static org.keycloak.models.Constants.PREVIOUS_LOGIN;
 import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.RealmModel;
+import org.keycloak.models.RoleModel;
 import org.keycloak.models.UserModel;
 import org.keycloak.models.UserSessionModel;
 import org.keycloak.models.utils.AuthenticationFlowResolver;
@@ -64,6 +75,13 @@ import java.net.URI;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import static org.keycloak.models.Constants.DISABLE_NOT_ACTIVE_USER;
+import static org.keycloak.models.Constants.DISABLE_NOT_ACTIVE_USER_PERIOD;
+import static org.keycloak.models.Constants.LAST_LOGIN;
+import static org.keycloak.models.Constants.SESSION_CONSTRAINT_ACTION;
+import static org.keycloak.models.Constants.SESSION_CONSTRAINT_COUNT;
+import static org.keycloak.models.Constants.SESSION_CONSTRAINT_ENABLED;
 
 /**
  * @author <a href="mailto:bill@burkecentral.com">Bill Burke</a>
@@ -1062,6 +1080,43 @@ public class AuthenticationProcessor {
         return clientSessionCtx;
     }
 
+    public static Response checkUserSessionsConstraint(KeycloakSession session, RealmModel realm, AuthenticationSessionModel authSession, EventBuilder event) {
+        ClientModel client = authSession.getClient();
+        boolean checkEnable = false;
+        int sessionCount = 0;
+        String constraintAction = "";
+        if (Boolean.TRUE.equals(Boolean.valueOf(client.getAttribute(SESSION_CONSTRAINT_ENABLED)))) {
+            checkEnable = true;
+            sessionCount = client.getAttribute(SESSION_CONSTRAINT_COUNT) != null ? Integer.parseInt(client.getAttribute(SESSION_CONSTRAINT_COUNT)) : 10;
+            constraintAction = client.getAttribute(SESSION_CONSTRAINT_ACTION);
+        } else if (Boolean.TRUE.equals(Boolean.valueOf(realm.getAttribute(SESSION_CONSTRAINT_ENABLED)))) {
+            checkEnable = true;
+            sessionCount = realm.getAttribute(SESSION_CONSTRAINT_COUNT, 10);
+            constraintAction = realm.getAttribute(SESSION_CONSTRAINT_ACTION);
+        }
+        if (checkEnable) {
+            List<UserSessionModel> userSessions = session.sessions().getUserSessions(realm, authSession.getAuthenticatedUser()).stream().filter(userSessionModel -> !userSessionModel.getId().equals(authSession.getParentSession().getId()))
+                    .filter(userSessionModel -> userSessionModel.getAuthenticatedClientSessionByClient(client.getId()) != null)
+                    .collect(Collectors.toList());
+            if (userSessions.size() >= sessionCount) {
+                if (SessionConstraintAction.LOGOUT_EARLY.name().equalsIgnoreCase(constraintAction)) {
+                    userSessions.stream()
+                            .sorted(Comparator.comparingInt(UserSessionModel::getStarted))
+                            .limit((userSessions.size() + 1) - sessionCount)
+                            .forEach(uSession -> session.sessions().removeUserSession(realm, uSession));
+                } else if (SessionConstraintAction.DISABLE_USER.name().equalsIgnoreCase(constraintAction)) {
+                    authSession.getAuthenticatedUser().setEnabled(false);
+                    event.error(Errors.MAX_USER_SESSION_LIMIT_EXCEEDED);
+                    return ErrorPage.error(session, authSession, Response.Status.BAD_REQUEST, Messages.USER_SESSION_CONSTRAINT_DISABLE_USER);
+                } else {
+                    event.error(Errors.MAX_USER_SESSION_LIMIT_EXCEEDED);
+                    return ErrorPage.error(session, authSession, Response.Status.BAD_REQUEST, Messages.USER_SESSION_CONSTRAINT_LOGOUT_CURRENT);
+                }
+            }
+        }
+        return null;
+    }
+
     public void evaluateRequiredActionTriggers() {
         AuthenticationManager.evaluateRequiredActionTriggers(session, authenticationSession, connection, request, uriInfo, event, realm, authenticationSession.getAuthenticatedUser());
     }
@@ -1076,7 +1131,14 @@ public class AuthenticationProcessor {
 
     public void validateUser(UserModel authenticatedUser) {
         if (authenticatedUser == null) return;
+        if ((authenticatedUser.getFirstAttribute(ENABLED_TILL) != null) && authenticatedUser.isEnabled()) {
+            LocalDateTime enabledTillDate = LocalDateTime.ofInstant(Instant.ofEpochMilli(Long.parseLong(authenticatedUser.getFirstAttribute(ENABLED_TILL))), TimeZone.getDefault().toZoneId());
+            if (enabledTillDate.isBefore(LocalDateTime.now())) {
+                authenticatedUser.setEnabled(false);
+            }
+        }
         if (!authenticatedUser.isEnabled()) throw new AuthenticationFlowException(AuthenticationFlowError.USER_DISABLED);
+        checkActivityUser(authenticatedUser);
         if (realm.isBruteForceProtected() && !realm.isPermanentLockout()) {
             if (getBruteForceProtector().isTemporarilyDisabled(session, realm, authenticatedUser)) {
                 getEvent().error(Errors.RESET_CREDENTIAL_DISABLED);
@@ -1084,8 +1146,33 @@ public class AuthenticationProcessor {
             }
         }
     }
+
+    private void checkActivityUser(UserModel user) {
+        RoleModel adminRole = realm.getRole(AdminRoles.ADMIN);
+        if (adminRole == null || !user.hasRole(adminRole)) {
+            boolean disableNotActiveUser = realm.getAttribute(DISABLE_NOT_ACTIVE_USER, false);
+            if (disableNotActiveUser && realm.getAttribute(DISABLE_NOT_ACTIVE_USER_PERIOD) != null && user.getFirstAttribute(LAST_LOGIN) != null) {
+                long lastLogin = Long.parseLong(user.getFirstAttribute(LAST_LOGIN));
+                long disableNotActiveUserPeriod = Long.parseLong(realm.getAttribute(DISABLE_NOT_ACTIVE_USER_PERIOD));
+                if (lastLogin + disableNotActiveUserPeriod * 1000 < System.currentTimeMillis()) {
+                    user.setEnabled(false);
+                    event.error(Errors.NOT_ACTIVE_USER_DISABLED);
+                    event.user(user);
+                    throw new ErrorPageException(session, authenticationSession, Response.Status.BAD_REQUEST, Messages.NOT_ACTIVE_USER_DISABLED, disableNotActiveUserPeriod / 86400);
+                }
+            }
+        }
+        if (user.getFirstAttribute(LAST_LOGIN) != null) {
+            user.setAttribute(PREVIOUS_LOGIN, user.getAttribute(LAST_LOGIN));
+        }
+        user.setAttribute(LAST_LOGIN, Collections.singletonList(String.valueOf(System.currentTimeMillis())));
+    }
     
     protected Response authenticationComplete() {
+        Response response = AuthenticationProcessor.checkUserSessionsConstraint(session, realm, authenticationSession, event);
+        if (response != null) {
+            return response;
+        }
         // attachSession(); // Session will be attached after requiredActions + consents are finished.
         AuthenticationManager.setClientScopesInSession(authenticationSession);
 
@@ -1112,7 +1199,10 @@ public class AuthenticationProcessor {
         return new Result(model, clientAuthenticator, executions);
     }
 
-
-
+    public enum SessionConstraintAction {
+        LOGOUT_CURRENT,
+        LOGOUT_EARLY,
+        DISABLE_USER
+    }
 
 }

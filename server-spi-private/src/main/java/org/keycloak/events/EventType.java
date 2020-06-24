@@ -132,7 +132,18 @@ public enum EventType {
     TOKEN_EXCHANGE_ERROR(true),
 
     PERMISSION_TOKEN(true),
-    PERMISSION_TOKEN_ERROR(false);
+    PERMISSION_TOKEN_ERROR(false),
+
+    VM_PREPARE(true),
+    VM_PREPARE_ERROR(true),
+    VM_STARTED(true),
+    VM_STARTED_ERROR(true),
+    VM_STOPPED(true),
+    VM_ERROR(true),
+    COMPUTE_NODE_ANNOUNCE(false),
+    COMPUTE_NODE_ERROR(true),
+    LDAP_AUTH_SUCCESS(true),
+    LDAP_AUTH_ERROR(true);
 
     private boolean saveByDefault;
 

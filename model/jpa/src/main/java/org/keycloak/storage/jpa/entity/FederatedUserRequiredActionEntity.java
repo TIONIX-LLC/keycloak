@@ -42,7 +42,7 @@ import java.io.Serializable;
 @Entity
 @Table(name="FED_USER_REQUIRED_ACTION")
 @IdClass(FederatedUserRequiredActionEntity.Key.class)
-public class FederatedUserRequiredActionEntity {
+public class FederatedUserRequiredActionEntity implements Serializable {
 
     @Id
     @Column(name="USER_ID")

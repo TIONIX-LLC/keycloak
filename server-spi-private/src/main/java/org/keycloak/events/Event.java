@@ -35,6 +35,12 @@ public class Event {
 
     private String userId;
 
+    private String nodeId;
+
+    private String vmId;
+
+    private String hostName;
+
     private String sessionId;
 
     private String ipAddress;
@@ -83,6 +89,30 @@ public class Event {
         this.userId = maxLength(userId, 255);
     }
 
+    public String getNodeId() {
+        return nodeId;
+    }
+
+    public void setNodeId(String nodeId) {
+        this.nodeId = maxLength(nodeId, 255);
+    }
+
+    public String getVmId() {
+        return vmId;
+    }
+
+    public void setVmId(String vmId) {
+        this.vmId = maxLength(vmId, 255);
+    }
+
+    public String getHostName() {
+        return hostName;
+    }
+
+    public void setHostName(String hostName) {
+        this.hostName = maxLength(hostName,255);
+    }
+
     public String getSessionId() {
         return sessionId;
     }
@@ -122,6 +152,9 @@ public class Event {
         clone.realmId = realmId;
         clone.clientId = clientId;
         clone.userId = userId;
+        clone.vmId = vmId;
+        clone.nodeId = nodeId;
+        clone.hostName = hostName;
         clone.sessionId = sessionId;
         clone.ipAddress = ipAddress;
         clone.error = error;

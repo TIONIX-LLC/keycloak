@@ -60,6 +60,12 @@ public class JBossLoggingEventListenerProvider implements EventListenerProvider 
             sb.append(event.getRealmId());
             sb.append(", clientId=");
             sb.append(event.getClientId());
+            sb.append(", vmId=");
+            sb.append(event.getVmId());
+            sb.append(", nodeId=");
+            sb.append(event.getNodeId());
+            sb.append(", hostName=");
+            sb.append(event.getHostName());
             sb.append(", userId=");
             sb.append(event.getUserId());
             sb.append(", ipAddress=");
@@ -118,6 +124,8 @@ public class JBossLoggingEventListenerProvider implements EventListenerProvider 
             sb.append(adminEvent.getAuthDetails().getUserId());
             sb.append(", ipAddress=");
             sb.append(adminEvent.getAuthDetails().getIpAddress());
+            sb.append(", hostName=");
+            sb.append(adminEvent.getHostName());
             sb.append(", resourceType=");
             sb.append(adminEvent.getResourceTypeAsString());
             sb.append(", resourcePath=");

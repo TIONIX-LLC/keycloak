@@ -17,6 +17,7 @@
 
 package org.keycloak.storage.jpa.entity;
 
+import java.io.Serializable;
 import javax.persistence.Access;
 import javax.persistence.AccessType;
 import javax.persistence.CascadeType;
@@ -49,7 +50,7 @@ import java.util.Collection;
         @NamedQuery(name="deleteFederatedUserConsentsByExternalClient", query="delete from FederatedUserConsentEntity consent where consent.clientStorageProvider = :clientStorageProvider and consent.externalClientId = :externalClientId"),
         @NamedQuery(name="deleteFederatedUserConsentsByClientStorageProvider", query="delete from FederatedUserConsentEntity consent where consent.clientStorageProvider = :clientStorageProvider"),
 })
-public class FederatedUserConsentEntity {
+public class FederatedUserConsentEntity implements Serializable {
 
     @Id
     @Column(name="ID", length = 36)
