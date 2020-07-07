@@ -1510,7 +1510,7 @@ public class UserTest extends AbstractAdminTest {
         assertEquals(100, result.size());
         for (UserRepresentation user : result) {
             assertThat(user.getAttributes(), Matchers.notNullValue());
-            assertThat(user.getAttributes().keySet(), Matchers.hasSize(1));
+            assertEquals(1, attributesCount(user.getAttributes()));
             assertThat(user.getAttributes(), Matchers.hasEntry(is("aName"), Matchers.contains("aValue")));
         }
 

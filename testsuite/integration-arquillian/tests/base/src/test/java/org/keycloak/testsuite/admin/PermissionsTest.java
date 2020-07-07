@@ -1956,7 +1956,7 @@ public class PermissionsTest extends AbstractKeycloakTest {
     }
 
     private void assertGettersEmpty(RealmRepresentation rep) {
-        assertGettersEmpty(rep, "getRealm");
+        assertGettersEmpty(rep, "getRealm", "getMasterAdminClientId", "getId");
     }
 
     private void assertGettersEmpty(ClientRepresentation rep) {

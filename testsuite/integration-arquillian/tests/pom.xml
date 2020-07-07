@@ -408,6 +408,7 @@
                 <plugin>
                     <artifactId>maven-surefire-plugin</artifactId>
                     <configuration>
+                        <excludes>**/SAML*Test</excludes>
                         <systemPropertyVariables>
                             <project.build.directory>${project.build.directory}</project.build.directory>
                             <arquillian.xml>${project.build.directory}/dependency/arquillian.xml</arquillian.xml>

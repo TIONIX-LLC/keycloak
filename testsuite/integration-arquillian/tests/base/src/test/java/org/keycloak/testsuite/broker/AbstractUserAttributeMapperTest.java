@@ -129,7 +129,7 @@ public abstract class AbstractUserAttributeMapperTest extends AbstractBaseBroker
             assertThat("No attributes are expected to be present", userRep.getAttributes(), nullValue());
         } else {
             assertThat(userRep.getAttributes(), notNullValue());
-            assertThat(userRep.getAttributes().keySet(), equalTo(mappedAttrNames));
+            assertThat(attributesKeys(userRep.getAttributes()), equalTo(mappedAttrNames));
             for (Map.Entry<String, List<String>> me : attrs.entrySet()) {
                 String mappedAttrName = ATTRIBUTE_NAME_TRANSLATION.get(me.getKey());
                 if (mappedAttrNames.contains(mappedAttrName)) {

@@ -6,6 +6,7 @@ import org.apache.http.client.methods.HttpUriRequest;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.util.EntityUtils;
+import org.junit.Ignore;
 import org.keycloak.representations.idm.RealmRepresentation;
 import org.keycloak.testsuite.adapter.AbstractServletsAdapterTest;
 import org.keycloak.testsuite.adapter.filter.AdapterActionsFilter;
@@ -20,6 +21,7 @@ import java.util.regex.Pattern;
 
 import static org.keycloak.testsuite.auth.page.AuthRealm.SAMLSERVLETDEMO;
 
+@Ignore
 public abstract class AbstractSAMLServletAdapterTest extends AbstractServletsAdapterTest {
 
     public static final String WEB_XML_WITH_ACTION_FILTER = "web-with-action-filter.xml";

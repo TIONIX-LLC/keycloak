@@ -7,7 +7,7 @@
     <saml:Assertion xmlns="urn:oasis:names:tc:SAML:2.0:assertion" ID="ID_cf2e2b00-dfb0-4163-b8b5-f2d85586a235" IssueInstant="2016-12-15T12:42:49.787Z" Version="2.0">
         <saml:Issuer>http://localhost:11080/auth/realms/saml-demo</saml:Issuer>
         <saml:Subject>
-            <saml:NameID Format="urn:oasis:names:tc:SAML:1.1:nameid-format:unspecified">roийнцьядць</saml:NameID>
+            <saml:NameID Format="urn:oasis:names:tc:SAML:1.1:nameid-format:unspecified">good</saml:NameID>
             <saml:SubjectConfirmation Method="urn:oasis:names:tc:SAML:2.0:cm:bearer">
                 <saml:SubjectConfirmationData InResponseTo="ID_cc0ff6f7-b481-4c98-9a79-481d50958290" NotOnOrAfter="2016-12-15T12:47:47.787Z" Recipient="http://localhost:8080/sales-post-sig/saml"/>
             </saml:SubjectConfirmation>

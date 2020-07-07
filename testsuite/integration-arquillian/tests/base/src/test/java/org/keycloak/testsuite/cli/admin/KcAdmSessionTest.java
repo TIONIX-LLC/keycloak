@@ -1,6 +1,9 @@
 package org.keycloak.testsuite.cli.admin;
 
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import java.util.Objects;
+import java.util.stream.Stream;
 import org.junit.Assert;
 import org.junit.Test;
 import org.keycloak.client.admin.cli.config.FileConfigHandler;
@@ -65,9 +68,26 @@ public class KcAdmSessionTest extends AbstractAdmCliTest {
             exe = execute("get-roles --config '" + configFile.getName() + "'");
 
             assertExitCodeAndStdErrSize(exe, 0, 0);
-            List<ObjectNode> roles = loadJson(exe.stdout(), LIST_OF_JSON);
+            List<ObjectNode> roles = Stream.of(loadJson(exe.stdout(), ObjectNode[].class)).collect(Collectors.toList());
             Assert.assertTrue("expect two realm roles available", roles.size() == 2);
 
+            /*
+            [ {
+  "id" : "964f5599-5f8d-4f10-b0f7-23c1e8f116e6",
+  "name" : "offline_access",
+  "description" : "${role_offline-access}",
+  "composite" : false,
+  "clientRole" : false,
+  "containerId" : "f2f7f4f5-c994-4379-9e97-f41c491e8caa"
+}, {
+  "id" : "83071900-d0a2-4a88-8a4b-d3d0274cd91e",
+  "name" : "uma_authorization",
+  "description" : "${role_uma_authorization}",
+  "composite" : false,
+  "clientRole" : false,
+  "containerId" : "f2f7f4f5-c994-4379-9e97-f41c491e8caa"
+} ]
+             */
             // create realm role
             exe = execute("create roles --config '" + configFile.getName() + "' -s name=testrole -s 'description=Test role' -o");
 
@@ -80,7 +100,7 @@ public class KcAdmSessionTest extends AbstractAdmCliTest {
             exe = execute("get-roles --config '" + configFile.getName() + "'");
 
             assertExitCodeAndStdErrSize(exe, 0, 0);
-            roles = loadJson(exe.stdout(), LIST_OF_JSON);
+            roles = Stream.of(loadJson(exe.stdout(), ObjectNode[].class)).collect(Collectors.toList());
             Assert.assertTrue("expect three realm roles available", roles.size() == 3);
 
             // create client
@@ -100,7 +120,7 @@ public class KcAdmSessionTest extends AbstractAdmCliTest {
             exe = execute("get-roles --config '" + configFile.getName() + "' --cclientid testclient");
 
             assertExitCodeAndStdErrSize(exe, 0, 0);
-            roles = loadJson(exe.stdout(), LIST_OF_JSON);
+            roles = Stream.of(loadJson(exe.stdout(), ObjectNode[].class)).collect(Collectors.toList());;
             Assert.assertTrue("expect one role", roles.size() == 1);
             Assert.assertEquals("clientrole", roles.get(0).get("name").asText());
 

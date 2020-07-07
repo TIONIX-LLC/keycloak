@@ -27,6 +27,7 @@ import org.junit.rules.ExpectedException;
 import org.keycloak.OAuth2Constants;
 import org.keycloak.admin.client.Keycloak;
 import org.keycloak.admin.client.resource.RealmResource;
+import org.keycloak.admin.client.resource.RealmsResource;
 import org.keycloak.common.util.Time;
 import org.keycloak.events.admin.OperationType;
 import org.keycloak.events.admin.ResourceType;
@@ -340,7 +341,9 @@ public class RealmTest extends AbstractAdminTest {
         rep.setEventsEnabled(true);
         rep.setAdminEventsEnabled(true);
         rep.setAdminEventsDetailsEnabled(true);
-        adminClient.realms().realm(REALM_NAME).updateRealmEventsConfig(rep);
+        RealmsResource realmsResource = adminClient.realms();
+        RealmResource realmResource = realmsResource.realm(REALM_NAME);
+        realmResource.updateRealmEventsConfig(rep);
         assertAdminEvents.assertEvent(realmId, OperationType.UPDATE, "events/config", rep, ResourceType.REALM);
         RealmEventsConfigRepresentation actual = realm.getRealmEventsConfig();
         checkRealmEventsConfigRepresentation(rep, actual);

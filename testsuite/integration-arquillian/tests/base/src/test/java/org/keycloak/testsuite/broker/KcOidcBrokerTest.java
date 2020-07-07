@@ -138,7 +138,7 @@ public final class KcOidcBrokerTest extends AbstractAdvancedBrokerTest {
 
         UserRepresentation user = getFederatedIdentity();
 
-        Assert.assertEquals(1, user.getAttributes().size());
+        Assert.assertEquals(1, attributesCount(user.getAttributes()));
         Assert.assertEquals("hard-coded", user.getAttributes().get("hard-coded").get(0));
     }
 

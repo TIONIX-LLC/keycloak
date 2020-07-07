@@ -37,6 +37,7 @@ import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.junit.Assume;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.keycloak.models.KeycloakSession;
 import org.keycloak.services.DefaultKeycloakSession;
@@ -68,6 +69,7 @@ public class DefaultHttpClientFactoryTest {
 		assertEquals(HttpStatus.SC_OK,response.getStatusLine().getStatusCode());
 	}
 
+	@Ignore
 	@Test(expected = SSLPeerUnverifiedException.class)
 	public void createHttpClientProviderWithUnvailableURL() throws ClientProtocolException, IOException {
 		DefaultHttpClientFactory factory = new DefaultHttpClientFactory();

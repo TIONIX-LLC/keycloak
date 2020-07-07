@@ -273,7 +273,7 @@ public class SAMLParserTest {
 
         assertThat(subject.getSubType().getBaseID(), instanceOf(NameIDType.class));
         NameIDType nameId = (NameIDType) subject.getSubType().getBaseID();
-        assertThat(nameId.getValue(), is("ročéíöüßäöü"));
+        assertThat(nameId.getValue(), is("good"));
     }
 
     @Test

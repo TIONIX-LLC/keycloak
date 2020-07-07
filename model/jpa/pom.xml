@@ -94,4 +94,57 @@
         </dependency>
     </dependencies>
 
+    <profiles>
+        <profile>
+            <id>test</id>
+            <build>
+                <plugins>
+                    <plugin>
+                        <artifactId>maven-antrun-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <phase>package</phase>
+                                <goals>
+                                    <goal>run</goal>
+                                </goals>
+                                <configuration>
+                                    <tasks>
+                                        <move file="src/main/resources/META-INF/jpa-changelog-master.xml"
+                                              tofile="src/main/resources/META-INF/jpa-changelog-master-base.xml"
+                                              verbose="true"
+                                              failonerror="false"/>
+                                        <copy file="src/test/resources/META-INF/jpa-changelog-master.xml"
+                                              tofile="src/main/resources/META-INF/jpa-changelog-master.xml"/>
+                                        <copy file="src/test/resources/META-INF/jpa-changelog-tnx.xml"
+                                              tofile="src/main/resources/META-INF/jpa-changelog-tnx.xml"/>
+                                    </tasks>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                    <plugin>
+                        <artifactId>maven-surefire-plugin</artifactId>
+                        <configuration>
+                            <skip>true</skip>
+                        </configuration>
+                    </plugin>
+                    <plugin>
+                        <artifactId>maven-jar-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <phase>package</phase>
+                                <goals>
+                                    <goal>jar</goal>
+                                </goals>
+                                    <configuration>
+                                        <classifier>test</classifier>
+                                    </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
+
 </project>

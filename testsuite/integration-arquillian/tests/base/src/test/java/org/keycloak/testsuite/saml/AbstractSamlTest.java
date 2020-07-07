@@ -1,5 +1,6 @@
 package org.keycloak.testsuite.saml;
 
+import org.junit.Ignore;
 import org.keycloak.dom.saml.v2.protocol.AuthnRequestType;
 import org.keycloak.protocol.saml.SamlProtocol;
 import org.keycloak.representations.idm.RealmRepresentation;
@@ -17,6 +18,7 @@ import static org.keycloak.testsuite.utils.io.IOUtil.loadRealm;
 /**
  * @author mhajas
  */
+@Ignore
 public abstract class AbstractSamlTest extends AbstractAuthTest {
 
     public static final String REALM_NAME = "demo";

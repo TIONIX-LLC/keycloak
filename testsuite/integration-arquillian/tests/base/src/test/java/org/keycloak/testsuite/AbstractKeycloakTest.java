@@ -17,6 +17,7 @@
 package org.keycloak.testsuite;
 
 import io.appium.java_client.AppiumDriver;
+import java.util.Set;
 import org.apache.commons.configuration.ConfigurationException;
 import org.apache.commons.configuration.PropertiesConfiguration;
 import org.jboss.arquillian.container.test.api.RunAsClient;
@@ -101,6 +102,7 @@ public abstract class AbstractKeycloakTest {
     protected static final boolean AUTH_SERVER_SSL_REQUIRED = Boolean.parseBoolean(System.getProperty("auth.server.ssl.required", "false"));
     protected static final String AUTH_SERVER_SCHEME = AUTH_SERVER_SSL_REQUIRED ? "https" : "http";
     protected static final String AUTH_SERVER_PORT = AUTH_SERVER_SSL_REQUIRED ? System.getProperty("auth.server.https.port", "8543") : System.getProperty("auth.server.http.port", "8180");
+    protected static final String TVS_ATTR_PREFIX = "tvs.";
 
     protected static final String ENGLISH_LOCALE_NAME = "English";
 
@@ -617,5 +619,13 @@ public abstract class AbstractKeycloakTest {
             }
         }
         return in;
+    }
+
+    protected long attributesCount(Map<String, List<String>> attributes) {
+        return attributes.keySet().stream().filter(p -> !p.startsWith(TVS_ATTR_PREFIX)).count();
+    }
+
+    protected Set<String> attributesKeys(Map<String, List<String>> attributes) {
+        return attributes.keySet().stream().filter(p -> !p.startsWith(TVS_ATTR_PREFIX)).collect(Collectors.toSet());
     }
 }

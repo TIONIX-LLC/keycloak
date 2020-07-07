@@ -255,7 +255,7 @@ public class UserModelTest extends AbstractTestRealmKeycloakTest {
             Assert.assertThat(user.getFirstAttribute("key3"), nullValue());
 
             Map<String, List<String>> allAttrVals = user.getAttributes();
-            Assert.assertThat(allAttrVals.keySet(), hasSize(2));
+            Assert.assertEquals(2, attributesCount(allAttrVals));
             Assert.assertThat(allAttrVals.get("key1"), equalTo(user.getAttribute("key1")));
             Assert.assertThat(allAttrVals.get("key2"), equalTo(user.getAttribute("key2")));
 
@@ -304,7 +304,7 @@ public class UserModelTest extends AbstractTestRealmKeycloakTest {
             Map<String, List<String>> allAttrVals = user.getAttributes();
 
             // Ensure same transaction is able to see updated value
-            Assert.assertThat(allAttrVals.keySet(), hasSize(1));
+            Assert.assertEquals(1, attributesCount(allAttrVals));
             Assert.assertThat(allAttrVals.get("key1"), contains("val2"));
 
         });

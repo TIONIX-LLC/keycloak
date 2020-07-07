@@ -30,7 +30,6 @@ import org.keycloak.representations.idm.RealmRepresentation;
 import org.keycloak.services.messages.Messages;
 import org.keycloak.services.resources.account.AccountCredentialResource;
 import org.keycloak.services.resources.account.AccountCredentialResource.PasswordUpdate;
-import org.keycloak.testsuite.arquillian.annotation.EnableFeature;
 import org.keycloak.testsuite.util.TokenUtil;
 
 import java.io.IOException;
@@ -41,7 +40,6 @@ import java.util.Map;
 
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.junit.Assert.*;
-import static org.keycloak.common.Profile.Feature.ACCOUNT_API;
 
 /**
  * @author <a href="mailto:sthorger@redhat.com">Stian Thorgersen</a>
@@ -55,7 +53,7 @@ public class AccountRestServiceTest extends AbstractRestServiceTest {
         assertEquals("Brady", user.getLastName());
         assertEquals("test-user@localhost", user.getEmail());
         assertFalse(user.isEmailVerified());
-        assertTrue(user.getAttributes().isEmpty());
+        assertEquals(0, attributesCount(user.getAttributes()));
     }
 
     @Test
@@ -76,7 +74,7 @@ public class AccountRestServiceTest extends AbstractRestServiceTest {
 
             assertEquals("Homer", user.getFirstName());
             assertEquals("Simpsons", user.getLastName());
-            assertEquals(2, user.getAttributes().size());
+            assertEquals(2, attributesCount(user.getAttributes()));
             assertEquals(1, user.getAttributes().get("attr1").size());
             assertEquals("val1", user.getAttributes().get("attr1").get(0));
             assertEquals(1, user.getAttributes().get("attr2").size());
@@ -88,7 +86,7 @@ public class AccountRestServiceTest extends AbstractRestServiceTest {
 
             user = updateAndGet(user);
 
-            assertEquals(1, user.getAttributes().size());
+            assertEquals(1, attributesCount(user.getAttributes()));
             assertEquals(2, user.getAttributes().get("attr2").size());
             assertThat(user.getAttributes().get("attr2"), containsInAnyOrder("val2", "val3"));
 
