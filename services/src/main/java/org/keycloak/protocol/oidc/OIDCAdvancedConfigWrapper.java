@@ -149,6 +149,14 @@ public class OIDCAdvancedConfigWrapper {
         setAttribute(OIDCConfigAttributes.ID_TOKEN_ENCRYPTED_RESPONSE_ENC, encName);
     }
 
+    public String getIdTokenEncryptionPublicKey() {
+        return getAttribute(OIDCConfigAttributes.ID_TOKEN_ENCRYPTION_PUBLIC_KEY);
+    }
+
+    public void setIdTokenEncryptionPublicKey(String publicKey) {
+        setAttribute(OIDCConfigAttributes.ID_TOKEN_ENCRYPTION_PUBLIC_KEY, publicKey);
+    }
+
     private String getAttribute(String attrKey) {
         if (clientModel != null) {
             return clientModel.getAttribute(attrKey);

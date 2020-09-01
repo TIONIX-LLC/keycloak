@@ -83,6 +83,15 @@ public class ClientPublicKeyLoader implements PublicKeyLoader {
                 logger.warnf(me, "Unable to retrieve publicKey for verify signature of client '%s' . Error details: %s", client.getClientId(), me.getMessage());
                 return Collections.emptyMap();
             }
+        } else if (keyUse == JWK.Use.ENCRYPTION && config.getIdTokenEncryptionPublicKey() != null) {
+            KeyWrapper keyWrapper = new KeyWrapper();
+            keyWrapper.setType(KeyType.RSA);
+            keyWrapper.setUse(KeyUse.ENC);
+            PublicKey publicKey = KeycloakModelUtils.getPublicKey(config.getIdTokenEncryptionPublicKey());
+            keyWrapper.setKid(KeyUtils.createKeyId(publicKey));
+            keyWrapper.setPublicKey(publicKey);
+            keyWrapper.setAlgorithm(config.getIdTokenEncryptedResponseAlg());
+            return Collections.singletonMap(keyWrapper.getKid(), keyWrapper);
         } else {
             logger.warnf("Unable to retrieve publicKey of client '%s' for the specified purpose other than verifying signature", client.getClientId());
             return Collections.emptyMap();
