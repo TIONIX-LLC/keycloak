@@ -20,7 +20,7 @@
     <parent>
         <artifactId>keycloak-parent</artifactId>
         <groupId>org.keycloak</groupId>
-        <version>8.0.2-TNX</version>
+        <version>8.0.3-TNX</version>
         <relativePath>../../pom.xml</relativePath>
     </parent>
     <name>Keycloak OIDC Client Adapter Modules</name>
