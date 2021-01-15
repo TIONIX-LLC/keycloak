@@ -17,6 +17,11 @@
 
 package org.keycloak.storage.ldap.mappers.membership.role;
 
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 import org.jboss.logging.Logger;
 import org.keycloak.component.ComponentModel;
 import org.keycloak.models.ClientModel;
@@ -40,12 +45,6 @@ import org.keycloak.storage.ldap.mappers.membership.CommonLDAPGroupMapperConfig;
 import org.keycloak.storage.ldap.mappers.membership.LDAPGroupMapperMode;
 import org.keycloak.storage.ldap.mappers.membership.UserRolesRetrieveStrategy;
 import org.keycloak.storage.user.SynchronizationResult;
-
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
 
 /**
  * Map realm roles or roles of particular client to LDAP groups
@@ -247,7 +246,7 @@ public class RoleLDAPStorageMapper extends AbstractLDAPStorageMapper implements 
 
     public LDAPObject createLDAPRole(String roleName) {
         LDAPObject ldapRole = LDAPUtils.createLDAPGroup(ldapProvider, roleName, config.getRoleNameLdapAttribute(), config.getRoleObjectClasses(ldapProvider),
-                config.getRolesDn(), Collections.<String, Set<String>>emptyMap(), config.getMembershipLdapAttribute());
+                config.getRolesDn(), Collections.<String, Set<String>>emptyMap(), config.getMembershipLdapAttribute(), config.getUuidLDAPAttributeName());
 
         logger.debugf("Creating role [%s] to LDAP with DN [%s]", roleName, ldapRole.getDn().toString());
         return ldapRole;

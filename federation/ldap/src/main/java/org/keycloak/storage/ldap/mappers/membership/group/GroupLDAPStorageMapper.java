@@ -17,6 +17,16 @@
 
 package org.keycloak.storage.ldap.mappers.membership.group;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import org.jboss.logging.Logger;
 import org.keycloak.component.ComponentModel;
 import org.keycloak.models.GroupModel;
@@ -44,17 +54,6 @@ import org.keycloak.storage.ldap.mappers.membership.LDAPGroupMapperMode;
 import org.keycloak.storage.ldap.mappers.membership.MembershipType;
 import org.keycloak.storage.ldap.mappers.membership.UserRolesRetrieveStrategy;
 import org.keycloak.storage.user.SynchronizationResult;
-
-import java.util.Arrays;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
 
 /**
  * @author <a href="mailto:mposolda@redhat.com">Marek Posolda</a>
@@ -126,7 +125,7 @@ public class GroupLDAPStorageMapper extends AbstractLDAPStorageMapper implements
 
     public LDAPObject createLDAPGroup(String groupName, Map<String, Set<String>> additionalAttributes) {
         LDAPObject ldapGroup = LDAPUtils.createLDAPGroup(ldapProvider, groupName, config.getGroupNameLdapAttribute(), config.getGroupObjectClasses(ldapProvider),
-                config.getGroupsDn(), additionalAttributes, config.getMembershipLdapAttribute());
+                config.getGroupsDn(), additionalAttributes, config.getMembershipLdapAttribute(), config.getUuidLDAPAttributeName());
 
         logger.debugf("Creating group [%s] to LDAP with DN [%s]", groupName, ldapGroup.getDn().toString());
         return ldapGroup;

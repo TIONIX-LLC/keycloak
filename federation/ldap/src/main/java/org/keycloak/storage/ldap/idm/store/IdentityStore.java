@@ -17,13 +17,12 @@
 
 package org.keycloak.storage.ldap.idm.store;
 
+import java.util.List;
+import javax.naming.AuthenticationException;
 import org.keycloak.storage.ldap.LDAPConfig;
 import org.keycloak.storage.ldap.idm.model.LDAPObject;
 import org.keycloak.storage.ldap.idm.query.internal.LDAPQuery;
 import org.keycloak.storage.ldap.mappers.LDAPOperationDecorator;
-
-import javax.naming.AuthenticationException;
-import java.util.List;
 
 /**
  * IdentityStore representation providing minimal SPI
@@ -50,6 +49,13 @@ public interface IdentityStore {
      * @param ldapObject
      */
     void add(LDAPObject ldapObject);
+
+    /**
+     * Persists the specified IdentityType with specific uuid attribute name
+     *
+     * @param ldapObject
+     */
+    void add(LDAPObject ldapObject, String uuidLDAPAttributeName);
 
     /**
      * Updates the specified IdentityType

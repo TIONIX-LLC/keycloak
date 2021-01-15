@@ -17,13 +17,12 @@
 
 package org.keycloak.storage.ldap.mappers.membership;
 
+import java.util.HashSet;
+import java.util.Set;
 import org.keycloak.component.ComponentModel;
 import org.keycloak.models.LDAPConstants;
 import org.keycloak.models.ModelException;
 import org.keycloak.storage.ldap.LDAPConfig;
-
-import java.util.HashSet;
-import java.util.Set;
 
 /**
  * @author <a href="mailto:mposolda@redhat.com">Marek Posolda</a>
@@ -48,6 +47,9 @@ public abstract class CommonLDAPGroupMapperConfig {
     // Used just for UserRolesRetrieveStrategy.GetRolesFromUserMemberOfAttribute. It's the name of the attribute on LDAP user, which is used to track the groups which user is member.
     // Usually it will "memberof"
     public static final String MEMBEROF_LDAP_ATTRIBUTE = "memberof.ldap.attribute";
+
+    // Name of LDAP attribute, which is used for uuid object mappings. Usually it will be "cn"
+    public static final String UUID_LDAP_ATTRIBUTE = "uuidLDAPAttribute";
 
 
     protected final ComponentModel mapperModel;
@@ -83,6 +85,10 @@ public abstract class CommonLDAPGroupMapperConfig {
         }
 
         return Enum.valueOf(LDAPGroupMapperMode.class, modeString.toUpperCase());
+    }
+
+    public String getUuidLDAPAttributeName() {
+        return mapperModel.getConfig().getFirst(UUID_LDAP_ATTRIBUTE);
     }
 
     protected Set<String> getConfigValues(String str) {

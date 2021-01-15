@@ -17,6 +17,34 @@
 
 package org.keycloak.storage.ldap.idm.store.ldap;
 
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.NoSuchElementException;
+import java.util.Optional;
+import java.util.Set;
+import java.util.TreeSet;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+import javax.naming.AuthenticationException;
+import javax.naming.NamingEnumeration;
+import javax.naming.NamingException;
+import javax.naming.directory.Attribute;
+import javax.naming.directory.AttributeInUseException;
+import javax.naming.directory.Attributes;
+import javax.naming.directory.BasicAttribute;
+import javax.naming.directory.BasicAttributes;
+import javax.naming.directory.DirContext;
+import javax.naming.directory.ModificationItem;
+import javax.naming.directory.NoSuchAttributeException;
+import javax.naming.directory.SchemaViolationException;
+import javax.naming.directory.SearchControls;
+import javax.naming.directory.SearchResult;
 import org.jboss.logging.Logger;
 import org.keycloak.common.util.Base64;
 import org.keycloak.models.KeycloakSession;
@@ -31,35 +59,6 @@ import org.keycloak.storage.ldap.idm.query.internal.EqualCondition;
 import org.keycloak.storage.ldap.idm.query.internal.LDAPQuery;
 import org.keycloak.storage.ldap.idm.store.IdentityStore;
 import org.keycloak.storage.ldap.mappers.LDAPOperationDecorator;
-
-import javax.naming.AuthenticationException;
-import javax.naming.NamingEnumeration;
-import javax.naming.NamingException;
-import javax.naming.directory.Attribute;
-import javax.naming.directory.Attributes;
-import javax.naming.directory.BasicAttribute;
-import javax.naming.directory.BasicAttributes;
-import javax.naming.directory.DirContext;
-import javax.naming.directory.ModificationItem;
-import javax.naming.directory.SearchControls;
-import javax.naming.directory.SearchResult;
-
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.NoSuchElementException;
-import java.util.Set;
-import java.util.TreeSet;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-import javax.naming.directory.AttributeInUseException;
-import javax.naming.directory.NoSuchAttributeException;
-import javax.naming.directory.SchemaViolationException;
 
 /**
  * An IdentityStore implementation backed by an LDAP directory
@@ -88,6 +87,11 @@ public class LDAPIdentityStore implements IdentityStore {
 
     @Override
     public void add(LDAPObject ldapObject) {
+        add(ldapObject, null);
+    }
+
+    @Override
+    public void add(LDAPObject ldapObject, String uuidLDAPAttributeName) {
         // id will be assigned by the ldap server
         if (ldapObject.getUuid() != null) {
             throw new ModelException("Can't add object with already assigned uuid");
@@ -96,7 +100,7 @@ public class LDAPIdentityStore implements IdentityStore {
         String entryDN = ldapObject.getDn().toString();
         BasicAttributes ldapAttributes = extractAttributesForSaving(ldapObject, true);
         this.operationManager.createSubContext(entryDN, ldapAttributes);
-        ldapObject.setUuid(getEntryIdentifier(ldapObject));
+        ldapObject.setUuid(getEntryIdentifier(ldapObject, uuidLDAPAttributeName));
 
         if (logger.isDebugEnabled()) {
             logger.debugf("Type with identifier [%s] and dn [%s] successfully added to LDAP store.", ldapObject.getUuid(), entryDN);
@@ -532,15 +536,15 @@ public class LDAPIdentityStore implements IdentityStore {
         return attr;
     }
 
-    protected String getEntryIdentifier(final LDAPObject ldapObject) {
+    protected String getEntryIdentifier(final LDAPObject ldapObject, final String uuidLDAPAttributeName) {
         try {
             // we need this to retrieve the entry's identifier from the ldap server
-            String uuidAttrName = getConfig().getUuidLDAPAttributeName();
+            String uuidAttrName = Optional.ofNullable(uuidLDAPAttributeName).orElse(getConfig().getUuidLDAPAttributeName());
 
             String rdn = ldapObject.getDn().getFirstRdn();
             String filter = "(" + EscapeStrategy.DEFAULT.escape(rdn) + ")";
             List<SearchResult> search = this.operationManager.search(ldapObject.getDn().toString(), filter, Arrays.asList(uuidAttrName), SearchControls.OBJECT_SCOPE);
-            Attribute id = search.get(0).getAttributes().get(getConfig().getUuidLDAPAttributeName());
+            Attribute id = search.get(0).getAttributes().get(uuidAttrName);
 
             if (id == null) {
                 throw new ModelException("Could not retrieve identifier for entry [" + ldapObject.getDn().toString() + "].");

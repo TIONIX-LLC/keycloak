@@ -17,6 +17,11 @@
 
 package org.keycloak.storage.ldap.mappers.membership.role;
 
+import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
 import org.keycloak.component.ComponentModel;
 import org.keycloak.component.ComponentValidationException;
 import org.keycloak.models.KeycloakSession;
@@ -35,12 +40,6 @@ import org.keycloak.storage.ldap.mappers.membership.LDAPGroupMapperMode;
 import org.keycloak.storage.ldap.mappers.membership.MembershipType;
 import org.keycloak.storage.ldap.mappers.membership.UserRolesRetrieveStrategy;
 import org.keycloak.storage.ldap.mappers.membership.group.GroupMapperConfig;
-
-import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
 
 /**
  * @author <a href="mailto:mposolda@redhat.com">Marek Posolda</a>
@@ -134,6 +133,11 @@ public class RoleLDAPStorageMapperFactory extends AbstractLDAPStorageMapperFacto
                 .property().name(RoleMapperConfig.ROLES_LDAP_FILTER)
                 .label("LDAP Filter")
                 .helpText("LDAP Filter adds additional custom filter to the whole query for retrieve LDAP roles. Leave this empty if no additional filtering is needed and you want to retrieve all roles from LDAP. Otherwise make sure that filter starts with '(' and ends with ')'")
+                .type(ProviderConfigProperty.STRING_TYPE)
+                .add()
+                .property().name(RoleMapperConfig.UUID_LDAP_ATTRIBUTE)
+                .label("LDAP attribute name for UUID")
+                .helpText("Name of LDAP attribute, which is used as unique object identifier (UUID) for objects in LDAP. For many LDAP server vendors, it is 'entryUUID'; however some are different. For example for Active directory it should be 'objectGUID'. If your LDAP server does not support the notion of UUID, you can use any other attribute that is supposed to be unique among LDAP users in tree. For example 'uid' or 'entryDN'")
                 .type(ProviderConfigProperty.STRING_TYPE)
                 .add();
 
