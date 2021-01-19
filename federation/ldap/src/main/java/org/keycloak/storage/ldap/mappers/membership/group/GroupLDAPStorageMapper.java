@@ -508,15 +508,26 @@ public class GroupLDAPStorageMapper extends AbstractLDAPStorageMapper implements
         LDAPObject ldapGroup = ldapGroupsMap.get(groupName);
 
         if (ldapGroup == null) {
-            ldapGroup = createLDAPGroup(groupName, supportedLdapAttributes);
-            syncResult.increaseAdded();
+            try {
+                ldapGroup = createLDAPGroup(groupName, supportedLdapAttributes);
+                syncResult.increaseAdded();
+            } catch (Throwable th) {
+                ldapGroupsMap.remove(groupName);
+                syncResult.increaseFailed();
+                logger.errorf(th, "Failed creating group [%s]", groupName);
+                return;
+            }
         } else {
             for (Map.Entry<String, Set<String>> attrEntry : supportedLdapAttributes.entrySet()) {
                 ldapGroup.setAttribute(attrEntry.getKey(), attrEntry.getValue());
             }
-
-            ldapProvider.getLdapIdentityStore().update(ldapGroup);
-            syncResult.increaseUpdated();
+            try {
+                ldapProvider.getLdapIdentityStore().update(ldapGroup);
+                syncResult.increaseUpdated();
+            } catch (Throwable th) {
+                syncResult.increaseFailed();
+                logger.errorf(th, "Failed updating group [%s]", groupName);
+            }
         }
 
         ldapGroupsMap.put(groupName, ldapGroup);
@@ -530,7 +541,12 @@ public class GroupLDAPStorageMapper extends AbstractLDAPStorageMapper implements
 
     // Update memberships of group in LDAP based on subgroups from KC. Do it recursively
     private void processKeycloakGroupMembershipsSyncToLDAP(GroupModel kcGroup, Map<String, LDAPObject> ldapGroupsMap) {
-        LDAPObject ldapGroup = ldapGroupsMap.get(kcGroup.getName());
+        String groupName = kcGroup.getName();
+        LDAPObject ldapGroup = ldapGroupsMap.get(groupName);
+        if (ldapGroup == null) {
+            logger.warnf("Not found processed group [%s]", groupName);
+            return;
+        }
         Set<LDAPDn> toRemoveSubgroupsDNs = getLDAPSubgroups(ldapGroup);
 
         String membershipUserLdapAttrName = getMembershipUserLdapAttribute(); // Not applicable for groups, but needs to be here
@@ -541,7 +557,11 @@ public class GroupLDAPStorageMapper extends AbstractLDAPStorageMapper implements
             LDAPObject ldapSubgroup = ldapGroupsMap.get(kcSubgroup.getName());
             if (!toRemoveSubgroupsDNs.remove(ldapSubgroup.getDn())) {
                 // if the group is not in the ldap group => add it
-                LDAPUtils.addMember(ldapProvider, MembershipType.DN, config.getMembershipLdapAttribute(), membershipUserLdapAttrName, ldapGroup, ldapSubgroup);
+                try {
+                    LDAPUtils.addMember(ldapProvider, MembershipType.DN, config.getMembershipLdapAttribute(), membershipUserLdapAttrName, ldapGroup, ldapSubgroup);
+                } catch (Throwable th) {
+                    logger.errorf(th, "Failed adding child group [%s] as member [%s] of group [%s]", kcSubgroup.getName(), membershipUserLdapAttrName, groupName);
+                }
             }
         }
 
@@ -549,7 +569,11 @@ public class GroupLDAPStorageMapper extends AbstractLDAPStorageMapper implements
         for (LDAPDn toRemoveDN : toRemoveSubgroupsDNs) {
             LDAPObject fakeGroup = new LDAPObject();
             fakeGroup.setDn(toRemoveDN);
-            LDAPUtils.deleteMember(ldapProvider, MembershipType.DN, config.getMembershipLdapAttribute(), membershipUserLdapAttrName, ldapGroup, fakeGroup);
+            try {
+                LDAPUtils.deleteMember(ldapProvider, MembershipType.DN, config.getMembershipLdapAttribute(), membershipUserLdapAttrName, ldapGroup, fakeGroup);
+            } catch (Throwable th) {
+                logger.errorf(th, "Failed remove child group [dn=%s] as member [%s] of group [%s]", toRemoveDN, membershipUserLdapAttrName, groupName);
+            }
         }
 
         for (GroupModel kcSubgroup : kcGroup.getSubGroups()) {

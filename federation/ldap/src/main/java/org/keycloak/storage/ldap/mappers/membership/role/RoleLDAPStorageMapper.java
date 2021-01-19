@@ -185,7 +185,12 @@ public class RoleLDAPStorageMapper extends AbstractLDAPStorageMapper implements 
                     syncResult.increaseUpdated();
                 } else {
                     logger.debugf("Syncing role [%s] from Keycloak to LDAP", roleName);
-                    createLDAPRole(roleName);
+                    try {
+                        createLDAPRole(roleName);
+                    } catch (Throwable th) {
+                        syncResult.increaseFailed();
+                        logger.errorf(th, "Failed syncing role [%s] from Keycloak to LDAP", roleName);
+                    }
                     syncResult.increaseAdded();
                 }
             }
