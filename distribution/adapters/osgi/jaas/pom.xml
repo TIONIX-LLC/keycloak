@@ -21,7 +21,7 @@
     <parent>
         <artifactId>keycloak-parent</artifactId>
         <groupId>org.keycloak</groupId>
-        <version>8.0.3-TNX</version>
+        <version>8.0.4-TNX</version>
         <relativePath>../../../../pom.xml</relativePath>
     </parent>
     <name>Keycloak OSGI JAAS Realm Configuration</name>
