@@ -1,5 +1,7 @@
 package org.keycloak.authentication.authenticators.conditional;
 
+import java.util.Collections;
+import java.util.List;
 import org.keycloak.Config.Scope;
 import org.keycloak.models.AuthenticationExecutionModel;
 import org.keycloak.models.AuthenticationExecutionModel.Requirement;
@@ -7,18 +9,18 @@ import org.keycloak.models.KeycloakSessionFactory;
 import org.keycloak.provider.ProviderConfigProperty;
 import org.keycloak.provider.ProviderConfigurationBuilder;
 
-import java.util.Collections;
-import java.util.List;
-
 public class ConditionalRoleAuthenticatorFactory implements ConditionalAuthenticatorFactory {
     public static final String PROVIDER_ID = "conditional-user-role";
     protected static final String CONDITIONAL_USER_ROLE = "condUserRole";
+    protected static final String CONDITIONAL_USER_ROLE_INVERSION = "condUserRoleInversion";
 
     private static List<ProviderConfigProperty> commonConfig;
 
     static {
         commonConfig = Collections.unmodifiableList(ProviderConfigurationBuilder.create()
             .property().name(CONDITIONAL_USER_ROLE).label("User role").helpText("Role the user should have to execute this flow").type(ProviderConfigProperty.STRING_TYPE).add()
+            .property().name(CONDITIONAL_USER_ROLE_INVERSION).label("Inversion of condition").helpText("If it is true - flow will be skipped when roles match")
+                .type(ProviderConfigProperty.BOOLEAN_TYPE).defaultValue("false").add()
             .build()
         );
     }
