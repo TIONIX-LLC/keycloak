@@ -16,6 +16,14 @@
  */
 package org.keycloak.credential;
 
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 import org.keycloak.common.util.reflections.Types;
 import org.keycloak.models.CredentialValidationOutput;
 import org.keycloak.models.KeycloakSession;
@@ -29,15 +37,6 @@ import org.keycloak.provider.ProviderFactory;
 import org.keycloak.storage.StorageId;
 import org.keycloak.storage.UserStorageManager;
 import org.keycloak.storage.UserStorageProvider;
-
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Set;
-import java.util.stream.Collectors;
 
 /**
  * @author <a href="mailto:bill@burkecentral.com">Bill Burke</a>
@@ -324,17 +323,21 @@ public class UserCredentialStoreManager implements UserCredentialManager, OnUser
     @Override
     public CredentialValidationOutput authenticate(KeycloakSession session, RealmModel realm, CredentialInput input) {
         List<CredentialAuthentication> list = UserStorageManager.getEnabledStorageProviders(session, realm, CredentialAuthentication.class);
+        CredentialValidationOutput output = null;
         for (CredentialAuthentication auth : list) {
             if (auth.supportsCredentialAuthenticationFor(input.getType())) {
-                CredentialValidationOutput output = auth.authenticate(realm, input);
-                if (output != null) return output;
+                output = auth.authenticate(realm, input);
+                if (output != null && output.getAuthStatus() != null && output.getAuthStatus().equals(CredentialValidationOutput.Status.AUTHENTICATED)) return output;
             }
+        }
+        if (output != null) {
+            return output;
         }
 
         list = getCredentialProviders(session, realm, CredentialAuthentication.class);
         for (CredentialAuthentication auth : list) {
             if (auth.supportsCredentialAuthenticationFor(input.getType())) {
-                CredentialValidationOutput output = auth.authenticate(realm, input);
+                output = auth.authenticate(realm, input);
                 if (output != null) return output;
             }
         }

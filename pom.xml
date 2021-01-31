@@ -74,6 +74,7 @@
         <jakarta.mail.version>1.6.4</jakarta.mail.version>
         <jboss.logging.version>3.4.1.Final</jboss.logging.version>
         <jboss.logging.tools.version>2.2.0.Final</jboss.logging.tools.version>
+        <apache.kerb>2.0.1</apache.kerb>
         <jboss-jaxrs-api_2.1_spec>2.0.0.Final</jboss-jaxrs-api_2.1_spec>
         <jboss-transaction-api_1.3_spec>2.0.0.Final</jboss-transaction-api_1.3_spec>
         <jboss.spec.javax.xml.bind.jboss-jaxb-api_2.3_spec.version>2.0.0.Final</jboss.spec.javax.xml.bind.jboss-jaxb-api_2.3_spec.version>
@@ -462,6 +463,11 @@
                 <groupId>org.jboss.logging</groupId>
                 <artifactId>jboss-logging-processor</artifactId>
                 <version>${jboss.logging.tools.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.kerby</groupId>
+                <artifactId>kerb-core</artifactId>
+                <version>${apache.kerb}</version>
             </dependency>
             <dependency>
                 <groupId>log4j</groupId>

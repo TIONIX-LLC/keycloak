@@ -17,6 +17,8 @@
 
 package org.keycloak.storage.ldap;
 
+import java.io.IOException;
+import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -24,28 +26,51 @@ import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
-
 import javax.naming.AuthenticationException;
-
+import org.apache.kerby.asn1.Asn1FieldInfo;
+import org.apache.kerby.asn1.EnumType;
+import org.apache.kerby.asn1.ExplicitField;
+import org.apache.kerby.asn1.parse.Asn1Container;
+import org.apache.kerby.asn1.parse.Asn1ParseResult;
+import org.apache.kerby.asn1.parse.Asn1Parser;
+import org.apache.kerby.asn1.type.Asn1BitString;
+import org.apache.kerby.asn1.type.Asn1ObjectIdentifier;
+import org.apache.kerby.asn1.type.Asn1OctetString;
+import org.apache.kerby.kerberos.kerb.type.KrbSequenceOfType;
+import org.apache.kerby.kerberos.kerb.type.KrbSequenceType;
+import org.apache.kerby.kerberos.kerb.type.ap.ApReq;
 import org.jboss.logging.Logger;
 import org.keycloak.common.constants.KerberosConstants;
+import org.keycloak.common.util.Base64;
 import org.keycloak.component.ComponentModel;
 import org.keycloak.credential.CredentialAuthentication;
 import org.keycloak.credential.CredentialInput;
 import org.keycloak.credential.CredentialInputUpdater;
 import org.keycloak.credential.CredentialInputValidator;
-import org.keycloak.credential.CredentialModel;
+import org.keycloak.federation.kerberos.KerberosConfig;
 import org.keycloak.federation.kerberos.impl.KerberosUsernamePasswordAuthenticator;
 import org.keycloak.federation.kerberos.impl.SPNEGOAuthenticator;
-import org.keycloak.models.*;
+import org.keycloak.models.CredentialValidationOutput;
+import org.keycloak.models.GroupModel;
+import org.keycloak.models.KeycloakSession;
+import org.keycloak.models.LDAPConstants;
+import org.keycloak.models.ModelDuplicateException;
+import org.keycloak.models.ModelException;
+import org.keycloak.models.RealmModel;
+import org.keycloak.models.RequiredActionProviderModel;
+import org.keycloak.models.RoleModel;
+import org.keycloak.models.UserCredentialModel;
+import org.keycloak.models.UserManager;
+import org.keycloak.models.UserModel;
 import org.keycloak.models.cache.CachedUserModel;
+import org.keycloak.models.cache.UserCache;
 import org.keycloak.models.credential.PasswordCredentialModel;
 import org.keycloak.models.utils.DefaultRoles;
 import org.keycloak.models.utils.ReadOnlyUserModelDelegate;
 import org.keycloak.policy.PasswordPolicyManagerProvider;
 import org.keycloak.policy.PolicyError;
-import org.keycloak.models.cache.UserCache;
 import org.keycloak.storage.ReadOnlyException;
 import org.keycloak.storage.StorageId;
 import org.keycloak.storage.UserStorageProvider;
@@ -689,8 +714,21 @@ public class LDAPStorageProvider implements UserStorageProvider,
         if (credential.getType().equals(UserCredentialModel.KERBEROS)) {
             if (kerberosConfig.isAllowKerberosAuthentication()) {
                 String spnegoToken = credential.getChallengeResponse();
+                if (realm.getUserStorageProviders().stream().filter(sp -> sp.isEnabled() && Objects.equals(factory.getId(), sp.getProviderId())
+                        && new KerberosConfig(sp).isAllowKerberosAuthentication()).count() > 1) {
+                    try {
+                        SpnegoInitToken token = new SpnegoInitToken(spnegoToken);
+                        String kerbRealm = token.getRealm();
+                        if (!Objects.equals(kerbRealm, kerberosConfig.getKerberosRealm())) {
+                            logger.debugf("Token realm [%s] does not match kerberos config [%s]", kerbRealm, kerberosConfig.getKerberosRealm());
+                            return CredentialValidationOutput.failed();
+                        }
+                    } catch (IOException ex) {
+                        logger.warn("Kerberos/SPNEGO token failed", ex);
+                        return CredentialValidationOutput.failed();
+                    }
+                }
                 SPNEGOAuthenticator spnegoAuthenticator = factory.createSPNEGOAuthenticator(spnegoToken, kerberosConfig);
-
                 spnegoAuthenticator.authenticate();
 
                 Map<String, String> state = new HashMap<String, String>();
@@ -779,5 +817,93 @@ public class LDAPStorageProvider implements UserStorageProvider,
         }
     }
 
+    public static class KrbObjectIds extends KrbSequenceOfType<Asn1ObjectIdentifier> {
 
+    }
+
+    private static class SpnegoInitToken extends KrbSequenceType {
+        private static final Asn1FieldInfo[] FIELD_INFOS = new Asn1FieldInfo[] {
+                new ExplicitField(AuthorizationDataEntryField.MECH_TYPES, KrbObjectIds.class),
+                new ExplicitField(AuthorizationDataEntryField.REQ_FLAGS, Asn1BitString.class),
+                new ExplicitField(AuthorizationDataEntryField.MECH_TOKEN, Asn1OctetString.class),
+                new ExplicitField(AuthorizationDataEntryField.MECH_LIST_MIC, Asn1OctetString.class),
+        };
+        private static final String SPNEGO_MECHANISM = "1.3.6.1.5.5.2";
+        private static final String KERBEROS_MECHANISM = "1.2.840.113554.1.2.2";
+
+        public SpnegoInitToken(String spnegoToken) throws IOException {
+            super(FIELD_INFOS);
+
+            byte[] token = Base64.decode(spnegoToken);
+            if (token.length == 0) {
+                throw new IOException("Empty SPNEGO token");
+            }
+
+            if ((byte) 0x60 != token[0]) {
+                throw new IOException("Malformed SPNEGO token");
+            }
+
+            Asn1ParseResult asn1ParseResult = Asn1Parser.parse(ByteBuffer.wrap(token));
+
+            Asn1ParseResult item1 = ((Asn1Container) asn1ParseResult).getChildren().get(0);
+            Asn1ObjectIdentifier asn1ObjectIdentifier = new Asn1ObjectIdentifier();
+            asn1ObjectIdentifier.decode(item1);
+
+            if (!asn1ObjectIdentifier.getValue().equals(SPNEGO_MECHANISM)) {
+                throw new IOException("Malformed SPNEGO token");
+            }
+
+            Asn1ParseResult item2 = ((Asn1Container) asn1ParseResult).getChildren().get(1);
+
+            decode(((Asn1Container) item2).getChildren().get(0));
+        }
+
+        public String getRealm() throws IOException {
+            byte[] token = getFieldAsOctets(AuthorizationDataEntryField.MECH_TOKEN);
+            if (token.length == 0) {
+                throw new IOException("Empty Kerberos token");
+            }
+            Asn1ParseResult asn1ParseResult = Asn1Parser.parse(ByteBuffer.wrap(token));
+
+            Asn1ParseResult item1 = ((Asn1Container) asn1ParseResult).getChildren().get(0);
+            Asn1ObjectIdentifier asn1ObjectIdentifier = new Asn1ObjectIdentifier();
+            asn1ObjectIdentifier.decode(item1);
+
+            if (!asn1ObjectIdentifier.getValue().equals(KERBEROS_MECHANISM)) {
+                throw new IOException("Malformed Kerberos token");
+            }
+
+            Asn1ParseResult item2 = ((Asn1Container) asn1ParseResult).getChildren().get(1);
+            int read;
+            int readLow = item2.getBodyBuffer().get(item2.getOffset()) & 0xff;
+            int readHigh = item2.getBodyBuffer().get(item2.getOffset() + 1) & 0xff;
+            read = (readHigh << 8) + readLow;
+            if (read != 0x01) {
+                throw new IOException("Malformed Kerberos token");
+            }
+
+            Asn1ParseResult item3 = ((Asn1Container) asn1ParseResult).getChildren().get(2);
+
+            ApReq apReq = new ApReq();
+            apReq.decode(item3);
+            return apReq.getTicket().getRealm();
+        }
+    }
+
+    private enum AuthorizationDataEntryField implements EnumType {
+        MECH_TYPES,
+        REQ_FLAGS,
+        MECH_TOKEN,
+        MECH_LIST_MIC;
+
+        @Override
+        public int getValue() {
+            return ordinal();
+        }
+
+        @Override
+        public String getName() {
+            return name();
+        }
+    }
 }
