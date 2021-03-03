@@ -18,7 +18,7 @@ public class ConditionalRoleAuthenticatorFactory implements ConditionalAuthentic
 
     static {
         commonConfig = Collections.unmodifiableList(ProviderConfigurationBuilder.create()
-            .property().name(CONDITIONAL_USER_ROLE).label("User role").helpText("Role the user should have to execute this flow").type(ProviderConfigProperty.STRING_TYPE).add()
+            .property().name(CONDITIONAL_USER_ROLE).label("User role").helpText("Role the user should have to execute this flow").type(ProviderConfigProperty.ROLE_TYPE).add()
             .property().name(CONDITIONAL_USER_ROLE_INVERSION).label("Inversion of condition").helpText("If it is true - flow will be skipped when roles match")
                 .type(ProviderConfigProperty.BOOLEAN_TYPE).defaultValue("false").add()
             .build()
