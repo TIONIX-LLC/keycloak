@@ -42,6 +42,8 @@ public class HardcodedLDAPRoleStorageMapperFactory extends AbstractLDAPStorageMa
                 "Role to grant to user.  Click 'Select Role' button to browse roles, or just type it in the textbox.  To reference an application role the syntax is appname.approle, i.e. myapp.myrole",
                 ProviderConfigProperty.ROLE_TYPE, null);
         configProperties.add(roleAttr);
+        configProperties.add(new ProviderConfigProperty(HardcodedLDAPRoleStorageMapper.IS_PERSISTENT_LINK, "Is persistent link", "If it's true, the link will be saved to the database",
+                ProviderConfigProperty.BOOLEAN_TYPE, false));
     }
 
     @Override

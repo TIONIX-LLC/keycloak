@@ -43,6 +43,8 @@ public class HardcodedLDAPGroupStorageMapperFactory extends AbstractLDAPStorageM
                 ProviderConfigProperty.STRING_TYPE, null);
 
         configProperties.add(groupAttr);
+        configProperties.add(new ProviderConfigProperty(HardcodedLDAPGroupStorageMapper.IS_PERSISTENT_LINK, "Is persistent link", "If it's true, the link will be saved to the database",
+                ProviderConfigProperty.BOOLEAN_TYPE, false));
     }
 
     @Override

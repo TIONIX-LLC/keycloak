@@ -37,6 +37,7 @@ public class HardcodedLDAPGroupStorageMapper extends AbstractLDAPStorageMapper {
     private static final Logger logger = Logger.getLogger(HardcodedLDAPGroupStorageMapper.class);
 
     public static final String GROUP = "group";
+    public static final String IS_PERSISTENT_LINK = "is.persistent.link";
 
     public HardcodedLDAPGroupStorageMapper(ComponentModel mapperModel, LDAPStorageProvider ldapProvider) {
         super(mapperModel, ldapProvider);
@@ -48,6 +49,14 @@ public class HardcodedLDAPGroupStorageMapper extends AbstractLDAPStorageMapper {
 
     @Override
     public UserModel proxy(LDAPObject ldapUser, UserModel delegate, RealmModel realm) {
+        if (isPersistentLink()) {
+            UserModel user = ldapProvider.getSession().userLocalStorage().getUserById(delegate.getId(), realm);
+            GroupModel group = getGroup(realm);
+            if (group != null && !user.isMemberOf(group)) {
+                user.joinGroup(group);
+            }
+            return delegate;
+        }
         return new UserModelDelegate(delegate) {
 
             @Override
@@ -95,5 +104,9 @@ public class HardcodedLDAPGroupStorageMapper extends AbstractLDAPStorageMapper {
             logger.warnf("Hardcoded group '%s' configured in mapper '%s' is not available anymore");
         }
         return group;
+    }
+
+    private boolean isPersistentLink() {
+        return parseBooleanParameter(mapperModel, IS_PERSISTENT_LINK);
     }
 }

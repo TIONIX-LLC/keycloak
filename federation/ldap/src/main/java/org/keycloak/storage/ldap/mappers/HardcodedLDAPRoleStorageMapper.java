@@ -40,6 +40,7 @@ public class HardcodedLDAPRoleStorageMapper extends AbstractLDAPStorageMapper {
     private static final Logger logger = Logger.getLogger(HardcodedLDAPRoleStorageMapper.class);
 
     public static final String ROLE = "role";
+    public static final String IS_PERSISTENT_LINK = "is.persistent.link";
 
     public HardcodedLDAPRoleStorageMapper(ComponentModel mapperModel, LDAPStorageProvider ldapProvider) {
         super(mapperModel, ldapProvider);
@@ -51,6 +52,14 @@ public class HardcodedLDAPRoleStorageMapper extends AbstractLDAPStorageMapper {
 
     @Override
     public UserModel proxy(LDAPObject ldapUser, UserModel delegate, RealmModel realm) {
+        if (isPersistentLink()) {
+            UserModel user = ldapProvider.getSession().userLocalStorage().getUserById(delegate.getId(), realm);
+            RoleModel role = getRole(realm);
+            if (role != null && !user.hasRole(role)) {
+                user.grantRole(role);
+            }
+            return delegate;
+        }
         return new UserModelDelegate(delegate) {
 
             @Override
@@ -122,5 +131,9 @@ public class HardcodedLDAPRoleStorageMapper extends AbstractLDAPStorageMapper {
             logger.warnf("Hardcoded role '%s' configured in mapper '%s' is not available anymore");
         }
         return role;
+    }
+
+    private boolean isPersistentLink() {
+        return parseBooleanParameter(mapperModel, IS_PERSISTENT_LINK);
     }
 }
