@@ -7,7 +7,7 @@
     <parent>
         <groupId>org.keycloak</groupId>
         <artifactId>keycloak-parent</artifactId>
-        <version>8.0.5-TNX</version>
+        <version>8.0.6-TNX</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
 
