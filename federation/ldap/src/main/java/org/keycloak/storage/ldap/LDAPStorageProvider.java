@@ -814,7 +814,10 @@ public class LDAPStorageProvider implements UserStorageProvider,
             }
 
             return ldapUser;
+        } catch (Exception ex) {
+            logger.warn("Failed to load LDAP user by user name", ex);
         }
+        return null;
     }
 
     public static class KrbObjectIds extends KrbSequenceOfType<Asn1ObjectIdentifier> {
