@@ -16,10 +16,28 @@
  */
 package org.keycloak.services.resources.admin;
 
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import javax.ws.rs.Consumes;
+import javax.ws.rs.DELETE;
+import javax.ws.rs.GET;
+import javax.ws.rs.NotFoundException;
+import javax.ws.rs.POST;
+import javax.ws.rs.PUT;
+import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
+import javax.ws.rs.Produces;
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
+import static javax.ws.rs.core.Response.Status.NOT_FOUND;
+import javax.ws.rs.core.UriBuilder;
 import org.jboss.logging.Logger;
 import org.jboss.resteasy.annotations.cache.NoCache;
 import org.jboss.resteasy.spi.BadRequestException;
-import javax.ws.rs.NotFoundException;
 import org.keycloak.authentication.AuthenticationFlow;
 import org.keycloak.authentication.Authenticator;
 import org.keycloak.authentication.ClientAuthenticator;
@@ -52,26 +70,6 @@ import org.keycloak.representations.idm.RequiredActionProviderRepresentation;
 import org.keycloak.services.ErrorResponse;
 import org.keycloak.services.resources.admin.permissions.AdminPermissionEvaluator;
 import org.keycloak.utils.CredentialHelper;
-
-import javax.ws.rs.Consumes;
-import javax.ws.rs.DELETE;
-import javax.ws.rs.GET;
-import javax.ws.rs.POST;
-import javax.ws.rs.PUT;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.Produces;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
-import javax.ws.rs.core.UriBuilder;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-
-import static javax.ws.rs.core.Response.Status.NOT_FOUND;
 
 /**
  * @resource Authentication Management
@@ -1076,7 +1074,7 @@ public class AuthenticationManagementResource {
         rep.setName(factory.getDisplayType());
         rep.setHelpText(factory.getHelpText());
         rep.setProperties(new LinkedList<>());
-        List<ProviderConfigProperty> configProperties = factory.getConfigProperties();
+        List<ProviderConfigProperty> configProperties = Optional.ofNullable(factory.getConfigProperties()).orElse(Collections.emptyList());
         for (ProviderConfigProperty prop : configProperties) {
             ConfigPropertyRepresentation propRep = getConfigPropertyRep(prop);
             rep.getProperties().add(propRep);
